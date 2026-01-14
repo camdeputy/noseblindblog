@@ -1,0 +1,8 @@
+{
+    "app": "npx ts-node --transpile-only bin/app.ts",
+    "context": {
+        "tableName": "BlogPosts",
+        "contentBucketName": "noseblindblog-content"
+    }
+}
+  
