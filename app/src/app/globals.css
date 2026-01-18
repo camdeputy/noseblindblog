@@ -1,0 +1,176 @@
+@import 'tailwindcss';
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+
+@theme {
+  --color-primary: #512D38;
+  --color-secondary: #B27092;
+  --color-tertiary: #FFE9F3;
+  --color-accent: #C9CBA3;
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Source Sans 3', system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Markdown content styles */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-family: var(--font-display);
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose h1 {
+  font-size: 2.25rem;
+}
+
+.prose h2 {
+  font-size: 1.875rem;
+}
+
+.prose h3 {
+  font-size: 1.5rem;
+}
+
+.prose p {
+  margin-bottom: 1em;
+  line-height: 1.75;
+}
+
+.prose a {
+  color: var(--color-secondary);
+  text-decoration: underline;
+}
+
+.prose a:hover {
+  color: var(--color-primary);
+}
+
+.prose code {
+  background-color: var(--color-tertiary);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.prose pre {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.prose pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.prose ul,
+.prose ol {
+  margin: 1em 0;
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin-bottom: 0.5em;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--color-secondary);
+  padding-left: 1rem;
+  margin: 1em 0;
+  color: #666;
+  font-style: italic;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1em 0;
+}
+
+.prose hr {
+  border: none;
+  border-top: 2px solid var(--color-tertiary);
+  margin: 2em 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--color-tertiary);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.prose th {
+  background-color: var(--color-tertiary);
+  font-weight: 600;
+}
+
+/* Post card animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.columns-1 > a,
+.columns-2 > a,
+.columns-3 > a {
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* Stagger the animations (5 posts per page) */
+.columns-1 > a:nth-child(1),
+.columns-2 > a:nth-child(1),
+.columns-3 > a:nth-child(1) { animation-delay: 0ms; }
+.columns-1 > a:nth-child(2),
+.columns-2 > a:nth-child(2),
+.columns-3 > a:nth-child(2) { animation-delay: 100ms; }
+.columns-1 > a:nth-child(3),
+.columns-2 > a:nth-child(3),
+.columns-3 > a:nth-child(3) { animation-delay: 200ms; }
+.columns-1 > a:nth-child(4),
+.columns-2 > a:nth-child(4),
+.columns-3 > a:nth-child(4) { animation-delay: 300ms; }
+.columns-1 > a:nth-child(5),
+.columns-2 > a:nth-child(5),
+.columns-3 > a:nth-child(5) { animation-delay: 400ms; }

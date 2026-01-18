@@ -2,3 +2,7 @@ node_modules
 dist
 cdk.out
 *.log
+CLAUDE.md
+.env*.local
+.env
+.next

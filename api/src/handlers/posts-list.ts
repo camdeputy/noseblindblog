@@ -29,7 +29,8 @@ export async function handler(
   );  
 
   const items = (resp.Items ?? []).map((it: any) => ({
-    slug: it.slug ?? it.PK?.replace("POST#", ""), // supports either style
+    id: it.postId,
+    slug: it.slug,
     title: it.title,
     summary: it.summary,
     status: it.status,
