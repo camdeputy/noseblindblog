@@ -83,7 +83,7 @@ export default async function PostPage({ params }: PostPageProps) {
         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            <time dateTime={displayDate}>{formatDate(displayDate)}</time>
+            <time dateTime={typeof displayDate === 'number' ? new Date(displayDate).toISOString() : displayDate}>{formatDate(displayDate)}</time>
           </div>
           {readingTime > 0 && (
             <div className="flex items-center gap-2">

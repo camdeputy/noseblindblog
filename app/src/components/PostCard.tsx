@@ -8,8 +8,9 @@ interface PostCardProps {
   post: Post;
 }
 
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
+function formatDate(date: string | number): string {
+  const dateObj = typeof date === 'number' ? new Date(date) : new Date(date);
+  return dateObj.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -36,7 +37,7 @@ export default function PostCard({ post }: PostCardProps) {
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Calendar className="w-4 h-4" />
-            <time dateTime={displayDate}>{formatDate(displayDate)}</time>
+            <time dateTime={typeof displayDate === 'number' ? new Date(displayDate).toISOString() : displayDate}>{formatDate(displayDate)}</time>
           </div>
         </article>
       </Card>

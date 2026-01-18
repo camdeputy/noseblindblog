@@ -140,7 +140,7 @@ function PostCard({ post, variant, index }: PostCardProps) {
             : 'border-secondary/20 text-primary/50 group-hover:border-white/20 group-hover:text-white/60'
           }
         `}>
-          <time dateTime={displayDate}>{formatDate(displayDate)}</time>
+          <time dateTime={typeof displayDate === 'number' ? new Date(displayDate).toISOString() : displayDate}>{formatDate(displayDate)}</time>
           <span className="
             flex items-center gap-1
             transition-transform duration-300
