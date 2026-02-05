@@ -1,14 +1,9 @@
-import { Heart } from 'lucide-react';
-
 export default function Footer() {
   return (
-    <footer className="bg-primary text-white mt-auto">
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-center gap-1 text-white/80">
-          <span>Made with</span>
-          <Heart className="w-4 h-4 text-secondary fill-secondary" />
-          <span>by Noseblind</span>
-        </div>
+    <footer className="bg-tertiary/30 mt-auto">
+      <div className="mx-6 py-6 text-center">
+        <p className="font-display text-lg font-semibold text-primary mb-1">Noseblind</p>
+        <p className="text-xs text-primary/40">&copy; {new Date().getFullYear()} All Rights Reserved.</p>
       </div>
     </footer>
   );

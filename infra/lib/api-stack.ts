@@ -8,7 +8,6 @@ import * as authorizers from "aws-cdk-lib/aws-apigatewayv2-authorizers";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3 from "aws-cdk-lib/aws-s3";
-import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 
 export class ApiStack extends cdk.Stack {
@@ -29,15 +28,11 @@ export class ApiStack extends cdk.Stack {
         }
         const contentBucket = s3.Bucket.fromBucketName(this, "noseblindblog-content", contentBucketName);
 
-        // Admin API key stored in Secrets Manager
-        const adminApiKeySecret = new secretsmanager.Secret(this, "AdminApiKeySecret", {
-            secretName: "noseblindblog/admin-api-key",
-            description: "API key for admin endpoints",
-            generateSecretString: {
-                excludePunctuation: true,
-                passwordLength: 32
-            }
-        });
+        // Admin API key passed as context parameter
+        const adminApiKey = this.node.tryGetContext("adminApiKey") as string;
+        if (!adminApiKey) {
+            throw new Error("Missing context value: adminApiKey (pass -c adminApiKey=YOUR_KEY)");
+        }
 
         // Admin API key authorizer
         const authorizerFn = new lambdaNodejs.NodejsFunction(this, "AuthorizerFn", {
@@ -47,10 +42,9 @@ export class ApiStack extends cdk.Stack {
             memorySize: 128,
             timeout: cdk.Duration.seconds(5),
             environment: {
-                ADMIN_API_KEY_SECRET_ARN: adminApiKeySecret.secretArn
+                ADMIN_API_KEY: adminApiKey
             }
         });
-        adminApiKeySecret.grantRead(authorizerFn);
 
         const adminAuthorizer = new authorizers.HttpLambdaAuthorizer(
             "AdminAuthorizer",
@@ -277,9 +271,5 @@ export class ApiStack extends cdk.Stack {
             value: httpApi.apiEndpoint
         });
 
-        new cdk.CfnOutput(this, "AdminApiKeySecretArn", {
-            value: adminApiKeySecret.secretArn,
-            description: "ARN of the admin API key secret in Secrets Manager"
-        });
     }
 }
