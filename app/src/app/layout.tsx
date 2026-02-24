@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
@@ -12,15 +13,17 @@ export const metadata: Metadata = {
   description: 'A modern blog about things that matter.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
+
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-white">
-        <GoogleAnalytics />
+        <GoogleAnalytics nonce={nonce} />
         <Header />
         <main className="flex-grow">{children}</main>
         <Footer />

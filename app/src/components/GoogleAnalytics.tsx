@@ -2,7 +2,7 @@ import Script from 'next/script';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
-export default function GoogleAnalytics() {
+export default function GoogleAnalytics({ nonce }: { nonce?: string }) {
   if (!GA_ID) return null;
 
   return (
@@ -10,10 +10,12 @@ export default function GoogleAnalytics() {
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
         strategy="afterInteractive"
+        nonce={nonce}
       />
       <Script
         src="/ga-init.js"
         strategy="afterInteractive"
+        nonce={nonce}
       />
     </>
   );
