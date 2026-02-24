@@ -1,53 +1,80 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import Select from '@/components/ui/Select';
 import NoteSelector from '@/components/NoteSelector';
-import { createFragrance, getAdminHouses, getAdminPosts } from '@/lib/api';
-import { FragranceHouse, NoteAssignment } from '@/types/fragrance';
+import { createFragrance, updateFragrance, deleteFragrance, getFragrance, getAdminHouses, getAdminPosts } from '@/lib/api';
+import { FragranceHouse, Fragrance, NoteAssignment } from '@/types/fragrance';
 import { Post } from '@/types/post';
 
 interface FragranceEditorProps {
+  mode?: 'create' | 'edit';
+  fragrance?: Fragrance;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditorProps) {
+export default function FragranceEditor({ mode = 'create', fragrance, onSuccess, onCancel }: FragranceEditorProps) {
+  const isEdit = mode === 'edit';
+
   // Dropdown data
   const [houses, setHouses] = useState<FragranceHouse[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   // Form fields
-  const [houseId, setHouseId] = useState('');
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [rating, setRating] = useState('');
-  const [priceCents, setPriceCents] = useState('');
-  const [currency, setCurrency] = useState('USD');
-  const [houseUrl, setHouseUrl] = useState('');
-  const [fragranceUrl, setFragranceUrl] = useState('');
-  const [reviewPostId, setReviewPostId] = useState('');
+  const [houseId, setHouseId] = useState(fragrance?.house_id ?? '');
+  const [name, setName] = useState(fragrance?.name ?? '');
+  const [slug, setSlug] = useState(fragrance?.slug ?? '');
+  const [description, setDescription] = useState(fragrance?.description ?? '');
+  const [rating, setRating] = useState(fragrance?.rating != null ? String(fragrance.rating) : '');
+  const [priceCents, setPriceCents] = useState(fragrance?.price_cents != null ? String(fragrance.price_cents) : '');
+  const [currency, setCurrency] = useState(fragrance?.currency ?? 'USD');
+  const [sizeMl, setSizeMl] = useState(fragrance?.size_ml != null ? String(fragrance.size_ml) : '');
+  const [houseUrl, setHouseUrl] = useState(fragrance?.house_url ?? '');
+  const [fragranceUrl, setFragranceUrl] = useState(fragrance?.fragrance_url ?? '');
+  const [reviewPostId, setReviewPostId] = useState(fragrance?.review_post_id ?? '');
   const [notes, setNotes] = useState<NoteAssignment[]>([]);
+
+  // Slug auto-generation helper
+  function toSlug(value: string) {
+    return value
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-');
+  }
 
   // Form state
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
 
-  // Load dropdown data on mount
+  // Load dropdown data (and notes for edit mode) on mount
   useEffect(() => {
     async function loadData() {
       try {
-        const [housesData, postsData] = await Promise.all([
+        const promises: Promise<unknown>[] = [
           getAdminHouses(),
           getAdminPosts().catch(() => [] as Post[]),
-        ]);
-        setHouses(housesData);
-        setPosts(postsData);
+        ];
+        // If editing, also fetch the full fragrance with notes
+        if (isEdit && fragrance) {
+          promises.push(getFragrance(fragrance.id));
+        }
+
+        const results = await Promise.all(promises);
+        setHouses(results[0] as FragranceHouse[]);
+        setPosts(results[1] as Post[]);
+
+        if (isEdit && results[2]) {
+          const full = results[2] as { notes: NoteAssignment[] };
+          setNotes(full.notes || []);
+        }
       } catch (err) {
         console.error('Failed to load form data:', err);
       } finally {
@@ -55,7 +82,7 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
       }
     }
     loadData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -77,28 +104,60 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
     }
 
     const priceNum = priceCents ? parseInt(priceCents, 10) : undefined;
+    const sizeMlNum = sizeMl ? parseInt(sizeMl, 10) : undefined;
 
     setIsSaving(true);
     try {
-      await createFragrance({
+      if (!slug.trim()) {
+      setError('Slug is required');
+      return;
+    }
+
+    const payload = {
         house_id: houseId,
         name: name.trim(),
+        slug: slug.trim(),
         description: description.trim() || undefined,
         rating: ratingNum,
         price_cents: priceNum,
         currency: currency.trim() || undefined,
+        size_ml: sizeMlNum,
         house_url: houseUrl.trim() || undefined,
         fragrance_url: fragranceUrl.trim() || undefined,
         review_post_id: reviewPostId || null,
         notes: notes.length > 0 ? notes : undefined,
-      });
+      };
+
+      if (isEdit && fragrance) {
+        await updateFragrance(fragrance.id, payload);
+      } else {
+        await createFragrance(payload);
+      }
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create fragrance');
+      setError(err instanceof Error ? err.message : `Failed to ${isEdit ? 'update' : 'create'} fragrance`);
     } finally {
       setIsSaving(false);
     }
   }
+
+  async function handleDelete() {
+    if (!fragrance) return;
+    if (!confirm(`Delete "${fragrance.name}"? This cannot be undone.`)) return;
+
+    setIsDeleting(true);
+    setError('');
+    try {
+      await deleteFragrance(fragrance.id);
+      onSuccess();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete fragrance');
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  const busy = isSaving || isDeleting;
 
   if (loadingData) {
     return (
@@ -111,7 +170,9 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
 
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-primary mb-4">New Fragrance</h3>
+      <h3 className="text-lg font-semibold text-primary mb-4">
+        {isEdit ? 'Edit Fragrance' : 'New Fragrance'}
+      </h3>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
@@ -127,7 +188,7 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
             value={houseId}
             onChange={(e) => setHouseId(e.target.value)}
             required
-            disabled={isSaving}
+            disabled={busy}
           >
             <option value="">Select a brand...</option>
             {houses.map((h) => (
@@ -138,12 +199,25 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
           <Input
             label="Fragrance Name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (!isEdit) setSlug(toSlug(e.target.value));
+            }}
             placeholder="e.g. Baccarat Rouge 540"
             required
-            disabled={isSaving}
+            disabled={busy}
           />
         </div>
+
+        {/* Slug */}
+        <Input
+          label="Slug"
+          value={slug}
+          onChange={(e) => setSlug(toSlug(e.target.value))}
+          placeholder="e.g. baccarat-rouge-540"
+          required
+          disabled={busy}
+        />
 
         {/* Description */}
         <Textarea
@@ -151,11 +225,11 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Describe the fragrance..."
-          disabled={isSaving}
+          disabled={busy}
         />
 
         {/* Rating & Price row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Input
             label="Rating (0-5)"
             type="number"
@@ -164,7 +238,7 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
             value={rating}
             onChange={(e) => setRating(e.target.value)}
             placeholder="0-5"
-            disabled={isSaving}
+            disabled={busy}
           />
 
           <Input
@@ -174,7 +248,7 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
             value={priceCents}
             onChange={(e) => setPriceCents(e.target.value)}
             placeholder="e.g. 32500"
-            disabled={isSaving}
+            disabled={busy}
           />
 
           <Input
@@ -182,7 +256,17 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
             placeholder="USD"
-            disabled={isSaving}
+            disabled={busy}
+          />
+
+          <Input
+            label="Size (ml)"
+            type="number"
+            min={0}
+            value={sizeMl}
+            onChange={(e) => setSizeMl(e.target.value)}
+            placeholder="e.g. 100"
+            disabled={busy}
           />
         </div>
 
@@ -194,7 +278,7 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
             value={houseUrl}
             onChange={(e) => setHouseUrl(e.target.value)}
             placeholder="https://..."
-            disabled={isSaving}
+            disabled={busy}
           />
 
           <Input
@@ -203,7 +287,7 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
             value={fragranceUrl}
             onChange={(e) => setFragranceUrl(e.target.value)}
             placeholder="https://..."
-            disabled={isSaving}
+            disabled={busy}
           />
         </div>
 
@@ -212,7 +296,7 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
           label="Linked Review Post"
           value={reviewPostId}
           onChange={(e) => setReviewPostId(e.target.value)}
-          disabled={isSaving}
+          disabled={busy}
         >
           <option value="">-- No linked review --</option>
           {posts.map((p) => (
@@ -230,13 +314,25 @@ export default function FragranceEditor({ onSuccess, onCancel }: FragranceEditor
       </div>
 
       <div className="flex items-center gap-3 mt-6 pt-4 border-t border-gray-200">
-        <Button type="submit" disabled={isSaving}>
+        <Button type="submit" disabled={busy}>
           {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-          {isSaving ? 'Creating...' : 'Create Fragrance'}
+          {isSaving ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Fragrance')}
         </Button>
-        <Button type="button" variant="secondary" onClick={onCancel} disabled={isSaving}>
+        <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
           Cancel
         </Button>
+        {isEdit && (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleDelete}
+            disabled={busy}
+            className="ml-auto text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+          >
+            {isDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        )}
       </div>
     </form>
   );

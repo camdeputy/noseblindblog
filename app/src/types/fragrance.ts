@@ -30,10 +30,12 @@ export interface Fragrance {
   id: string;
   house_id: string;
   name: string;
+  slug: string;
   description: string | null;
   rating: number | null;
   price_cents: number | null;
   currency: string | null;
+  size_ml: number | null;
   house_url: string | null;
   fragrance_url: string | null;
   review_post_id: string | null;
@@ -45,10 +47,12 @@ export interface Fragrance {
 export interface CreateFragranceData {
   house_id: string;
   name: string;
+  slug: string;
   description?: string;
   rating?: number;
   price_cents?: number;
   currency?: string;
+  size_ml?: number;
   house_url?: string;
   fragrance_url?: string;
   review_post_id?: string | null;
@@ -63,10 +67,12 @@ export interface UpdateHouseData {
 export interface UpdateFragranceData {
   house_id?: string;
   name?: string;
+  slug?: string;
   description?: string;
   rating?: number;
   price_cents?: number;
   currency?: string;
+  size_ml?: number;
   house_url?: string;
   fragrance_url?: string;
   review_post_id?: string | null;

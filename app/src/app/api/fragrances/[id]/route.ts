@@ -3,8 +3,9 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = createServerSupabase();
 
   // Option A: query the base tables (no raw SQL)
@@ -12,7 +13,7 @@ export async function GET(
   const { data: fragrance, error: fErr } = await supabase
     .from("fragrances")
     .select("id,name,description,house_id")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (fErr) return NextResponse.json({ error: fErr.message }, { status: 400 });
@@ -21,7 +22,7 @@ export async function GET(
   const { data: mapped, error: nErr } = await supabase
     .from("fragrance_note_map")
     .select("position, sort_order, fragrance_notes(name)")
-    .eq("fragrance_id", params.id)
+    .eq("fragrance_id", id)
     .order("position", { ascending: true })
     .order("sort_order", { ascending: true });
 

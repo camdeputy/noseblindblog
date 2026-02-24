@@ -47,10 +47,12 @@ export async function PUT(
   let body: {
     house_id?: string;
     name?: string;
+    slug?: string;
     description?: string;
     rating?: number;
     price_cents?: number;
     currency?: string;
+    size_ml?: number;
     house_url?: string;
     fragrance_url?: string;
     review_post_id?: string | null;
@@ -71,10 +73,12 @@ export async function PUT(
   const updates: Record<string, unknown> = {};
   if (body.house_id !== undefined) updates.house_id = body.house_id;
   if (body.name !== undefined) updates.name = body.name.trim();
+  if (body.slug !== undefined) updates.slug = body.slug.trim();
   if (body.description !== undefined) updates.description = body.description.trim() || null;
   if (body.rating !== undefined) updates.rating = body.rating;
   if (body.price_cents !== undefined) updates.price_cents = body.price_cents;
   if (body.currency !== undefined) updates.currency = body.currency.trim() || null;
+  if (body.size_ml !== undefined) updates.size_ml = body.size_ml;
   if (body.house_url !== undefined) updates.house_url = body.house_url.trim() || null;
   if (body.fragrance_url !== undefined) updates.fragrance_url = body.fragrance_url.trim() || null;
   if (body.review_post_id !== undefined) updates.review_post_id = body.review_post_id || null;

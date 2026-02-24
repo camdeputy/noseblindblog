@@ -3,6 +3,8 @@ import { Post } from '@/types/post';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
+export const revalidate = 300;
+
 export default async function HomePage() {
   let posts: Post[] = [];
   let error: string | null = null;
@@ -19,6 +21,8 @@ export default async function HomePage() {
     <div className="bg-tertiary/30">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
+        {/* Radial depth gradient — warms the center behind headings */}
+        <div className="absolute inset-0 pointer-events-none" style={{background: 'radial-gradient(ellipse 80% 55% at 50% 42%, rgba(244,191,219,0.22) 0%, transparent 68%)'}} aria-hidden="true" />
         <div className="relative min-h-[85vh] flex flex-col items-center justify-center py-20 px-8">
 
           {/* ── Individual stickers placed around the hero ── */}
@@ -54,15 +58,13 @@ export default async function HomePage() {
 
           {/* ── Content ── */}
           <p className="text-sm tracking-widest text-secondary mb-4 uppercase relative z-10">
-            Est. 2024 &middot; Fragrance Journal
+            Est. 2026 &middot; Fragrance Library
           </p>
           <h1 className="font-display text-6xl md:text-7xl lg:text-8xl font-semibold text-primary text-center leading-tight mb-6 relative z-10">
-            The Art of<br />
-            <span className="text-secondary">Invisible</span> Style
+            Noseblind
           </h1>
-          <p className="text-primary/70 text-center max-w-lg text-lg relative z-10">
-            Exploring the evocative world of perfumery, where memory meets
-            artistry and every scent tells a story.
+          <p className="text-primary/70 text-center max-w-3xl text-lg relative z-10">
+            The state of being desensitized to a scent after prolonged exposure. A condition we all endure, yet one that makes the world of fragrance endlessly fascinating.
           </p>
 
           <div className="mt-12 mb-8 relative z-10">
@@ -75,7 +77,7 @@ export default async function HomePage() {
       <section className="bg-tertiary/50">
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Illustration side */}
-          <div className="flex flex-col items-center justify-center relative py-16 px-8">
+          <div className="flex flex-col items-center justify-center relative py-16 px-8 illustration-depth">
             <div className="relative w-56 h-56">
               <CitrusSticker className="absolute top-2 left-6 w-32 h-32" />
               <RoseSticker className="absolute top-24 -left-2 w-24 h-24" />
@@ -142,9 +144,9 @@ export default async function HomePage() {
               <Link
                 key={post.id}
                 href={`/posts/${post.slug}`}
-                className="bg-tertiary/30 hover:bg-tertiary/60 transition-colors group"
+                className="bg-tertiary/30 hover:bg-tertiary/60 transition-colors group card-shadow border border-secondary/10"
               >
-                <div className="aspect-4/3 bg-tertiary/50 flex items-center justify-center">
+                <div className="aspect-4/3 bg-tertiary/50 flex items-center justify-center card-image-depth">
                   <span className="font-display text-6xl text-secondary/30">{i + 1}</span>
                 </div>
                 <div className="py-4 px-4">
@@ -177,8 +179,8 @@ const placeholderCards = [
 
 function PlaceholderCard({ category, date, title, index }: { category: string; date: string; title: string; index: number }) {
   return (
-    <div className="bg-tertiary/30">
-      <div className="aspect-4/3 bg-tertiary/50 flex items-center justify-center">
+    <div className="bg-tertiary/30 card-shadow border border-secondary/10">
+      <div className="aspect-4/3 bg-tertiary/50 flex items-center justify-center card-image-depth">
         <span className="font-display text-6xl text-secondary/30">{index}</span>
       </div>
       <div className="py-4 px-4">

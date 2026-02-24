@@ -1,6 +1,6 @@
-@import 'tailwindcss';
-
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+
+@import 'tailwindcss';
 
 @theme {
   --color-primary: #512D38;
@@ -128,6 +128,68 @@ body {
 .prose th {
   background-color: var(--color-tertiary);
   font-weight: 600;
+}
+
+/* ── Depth & Dimension System ── */
+
+/* Brand-tinted shadow variables */
+:root {
+  --shadow-bloom: 0 2px 8px rgba(81, 45, 56, 0.04), 0 1px 2px rgba(81, 45, 56, 0.02);
+  --shadow-petal: 0 4px 20px rgba(81, 45, 56, 0.06), 0 2px 8px rgba(81, 45, 56, 0.03);
+  --shadow-mist:  0 8px 40px rgba(81, 45, 56, 0.08), 0 4px 16px rgba(81, 45, 56, 0.04);
+}
+
+/* Header — lifts header off the page with a soft plum shadow + hairline */
+.elevated-header {
+  border-bottom: 1px solid rgba(178, 112, 146, 0.13);
+  box-shadow: 0 2px 12px rgba(81, 45, 56, 0.04), 0 1px 3px rgba(81, 45, 56, 0.02);
+}
+
+/* Cards — subtle lift with smooth hover ascent */
+.card-shadow {
+  box-shadow: var(--shadow-bloom);
+  transition: box-shadow 0.3s ease;
+}
+.card-shadow:hover {
+  box-shadow: var(--shadow-petal);
+}
+
+/* House avatar / logo circles — depth + inner highlight */
+.avatar-depth {
+  box-shadow:
+    0 4px 16px rgba(81, 45, 56, 0.07),
+    0 2px 6px rgba(81, 45, 56, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+/* Large panels (image containers, review boxes) */
+.panel-depth {
+  box-shadow: var(--shadow-mist);
+}
+
+/* Sticky filter bar — shadow beneath to float above content */
+.filter-bar-shadow {
+  box-shadow: 0 4px 12px rgba(81, 45, 56, 0.04);
+}
+
+/* Quote / footer sections — inset top shadow for depth */
+.quote-section {
+  box-shadow: inset 0 2px 16px rgba(81, 45, 56, 0.03);
+}
+
+/* Illustration area — warm radial glow behind botanical cluster */
+.illustration-depth {
+  background: radial-gradient(ellipse at center, rgba(244, 191, 219, 0.20) 0%, transparent 68%);
+}
+
+/* Note pills — inset highlight for dimensionality */
+.note-pill-depth {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 1px 2px rgba(81, 45, 56, 0.04);
+}
+
+/* Card image header — subtle inner vignette at the bottom */
+.card-image-depth {
+  box-shadow: inset 0 -16px 24px rgba(81, 45, 56, 0.025);
 }
 
 /* Post card animations */

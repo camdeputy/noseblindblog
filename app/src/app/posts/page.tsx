@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { getPosts } from '@/lib/api';
 import { Post } from '@/types/post';
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: 'Posts',
   description: 'Explore our latest articles and stories',
@@ -35,11 +37,11 @@ function PostCard({ post, index }: PostCardProps) {
   return (
     <Link
       href={`/posts/${post.slug}`}
-      className="group block bg-tertiary/30 hover:bg-tertiary/60 transition-all duration-300"
+      className="group block bg-tertiary/30 hover:bg-tertiary/60 transition-all duration-300 card-shadow border border-secondary/10"
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* Card number display */}
-      <div className="aspect-4/3 bg-tertiary/50 flex items-center justify-center relative overflow-hidden">
+      <div className="aspect-4/3 bg-tertiary/50 flex items-center justify-center relative overflow-hidden card-image-depth">
         <span className="font-display text-8xl text-secondary/20 group-hover:text-secondary/30 transition-colors">
           {String(index + 1).padStart(2, '0')}
         </span>
@@ -109,6 +111,8 @@ export default async function PostsPage() {
     <div className="min-h-screen bg-tertiary/30">
       {/* Hero Section - matching landing page aesthetic */}
       <section className="relative overflow-hidden">
+        {/* Radial depth gradient */}
+        <div className="absolute inset-0 pointer-events-none" style={{background: 'radial-gradient(ellipse 80% 55% at 50% 42%, rgba(244,191,219,0.22) 0%, transparent 68%)'}} aria-hidden="true" />
         {/* Decorative elements */}
         <StarSticker className="absolute top-16 left-[10%] w-6 h-6" />
         <StarSticker className="absolute top-24 left-[15%] w-4 h-4" />
@@ -180,7 +184,7 @@ export default async function PostsPage() {
       </section>
 
       {/* Bottom decorative section */}
-      <section className="bg-tertiary/50 py-16 mt-8">
+      <section className="bg-tertiary/50 py-16 mt-8 quote-section">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <p className="font-display text-2xl text-primary/80 italic">
             "Perfume is the art that makes memory speak."

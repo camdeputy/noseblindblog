@@ -13,7 +13,7 @@ interface ApiResponse<T> {
 
 export async function getPosts(): Promise<Post[]> {
   const response = await fetch(`${API_URL}/posts`, {
-    next: { revalidate: 60 },
+    next: { revalidate: 300 },
   });
 
   if (!response.ok) {
@@ -30,7 +30,7 @@ export async function getPosts(): Promise<Post[]> {
 
 export async function getPostBySlug(slug: string): Promise<PostWithContent> {
   const response = await fetch(`${API_URL}/posts/${slug}`, {
-    next: { revalidate: 60 },
+    next: { revalidate: 300, tags: [`post-${slug}`] },
   });
 
   if (!response.ok) {

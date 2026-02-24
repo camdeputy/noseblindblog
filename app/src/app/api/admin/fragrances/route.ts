@@ -23,10 +23,12 @@ export async function POST(request: Request) {
   let body: {
     house_id: string;
     name: string;
+    slug: string;
     description?: string;
     rating?: number;
     price_cents?: number;
     currency?: string;
+    size_ml?: number;
     house_url?: string;
     fragrance_url?: string;
     review_post_id?: string | null;
@@ -45,6 +47,9 @@ export async function POST(request: Request) {
   if (!body.name?.trim()) {
     return NextResponse.json({ ok: false, error: "Name is required" }, { status: 400 });
   }
+  if (!body.slug?.trim()) {
+    return NextResponse.json({ ok: false, error: "Slug is required" }, { status: 400 });
+  }
 
   // Insert the fragrance
   const { data: fragrance, error: fragError } = await supabase
@@ -52,10 +57,12 @@ export async function POST(request: Request) {
     .insert({
       house_id: body.house_id,
       name: body.name.trim(),
+      slug: body.slug.trim(),
       description: body.description?.trim() || null,
       rating: body.rating ?? null,
       price_cents: body.price_cents ?? null,
       currency: body.currency?.trim() || null,
+      size_ml: body.size_ml ?? null,
       house_url: body.house_url?.trim() || null,
       fragrance_url: body.fragrance_url?.trim() || null,
       review_post_id: body.review_post_id || null,

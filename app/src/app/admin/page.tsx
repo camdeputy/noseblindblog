@@ -42,12 +42,14 @@ export default function AdminDashboard() {
   const [housesLoading, setHousesLoading] = useState(false);
   const [housesError, setHousesError] = useState('');
   const [showHouseForm, setShowHouseForm] = useState(false);
+  const [editingHouse, setEditingHouse] = useState<FragranceHouse | null>(null);
 
   // Fragrances state
   const [fragrances, setFragrances] = useState<Fragrance[]>([]);
   const [fragrancesLoading, setFragrancesLoading] = useState(false);
   const [fragrancesError, setFragrancesError] = useState('');
   const [showFragranceForm, setShowFragranceForm] = useState(false);
+  const [editingFragrance, setEditingFragrance] = useState<Fragrance | null>(null);
 
   // Load posts on mount
   useEffect(() => {
@@ -166,12 +168,24 @@ export default function AdminDashboard() {
           isLoading={housesLoading}
           error={housesError}
           showForm={showHouseForm}
-          onToggleForm={() => setShowHouseForm(!showHouseForm)}
-          onCreated={() => {
+          editingHouse={editingHouse}
+          onToggleForm={() => {
+            setShowHouseForm(!showHouseForm);
+            setEditingHouse(null);
+          }}
+          onEdit={(house) => {
+            setEditingHouse(house);
             setShowHouseForm(false);
+          }}
+          onSaved={() => {
+            setShowHouseForm(false);
+            setEditingHouse(null);
             fetchHouses();
           }}
-          onCancel={() => setShowHouseForm(false)}
+          onCancel={() => {
+            setShowHouseForm(false);
+            setEditingHouse(null);
+          }}
         />
       )}
 
@@ -182,12 +196,24 @@ export default function AdminDashboard() {
           isLoading={fragrancesLoading}
           error={fragrancesError}
           showForm={showFragranceForm}
-          onToggleForm={() => setShowFragranceForm(!showFragranceForm)}
-          onCreated={() => {
+          editingFragrance={editingFragrance}
+          onToggleForm={() => {
+            setShowFragranceForm(!showFragranceForm);
+            setEditingFragrance(null);
+          }}
+          onEdit={(frag) => {
+            setEditingFragrance(frag);
             setShowFragranceForm(false);
+          }}
+          onSaved={() => {
+            setShowFragranceForm(false);
+            setEditingFragrance(null);
             fetchFragrances();
           }}
-          onCancel={() => setShowFragranceForm(false)}
+          onCancel={() => {
+            setShowFragranceForm(false);
+            setEditingFragrance(null);
+          }}
         />
       )}
     </div>
@@ -289,16 +315,20 @@ function BrandsTab({
   isLoading,
   error,
   showForm,
+  editingHouse,
   onToggleForm,
-  onCreated,
+  onEdit,
+  onSaved,
   onCancel,
 }: {
   houses: FragranceHouse[];
   isLoading: boolean;
   error: string;
   showForm: boolean;
+  editingHouse: FragranceHouse | null;
   onToggleForm: () => void;
-  onCreated: () => void;
+  onEdit: (house: FragranceHouse) => void;
+  onSaved: () => void;
   onCancel: () => void;
 }) {
   if (isLoading) {
@@ -313,7 +343,7 @@ function BrandsTab({
     <>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-primary">Fragrance Houses</h2>
-        {!showForm && (
+        {!showForm && !editingHouse && (
           <Button onClick={onToggleForm}>
             <Plus className="w-4 h-4 mr-2" />
             New Brand
@@ -323,7 +353,18 @@ function BrandsTab({
 
       {showForm && (
         <div className="mb-6">
-          <HouseEditor onSuccess={onCreated} onCancel={onCancel} />
+          <HouseEditor onSuccess={onSaved} onCancel={onCancel} />
+        </div>
+      )}
+
+      {editingHouse && (
+        <div className="mb-6">
+          <HouseEditor
+            mode="edit"
+            house={editingHouse}
+            onSuccess={onSaved}
+            onCancel={onCancel}
+          />
         </div>
       )}
 
@@ -344,6 +385,7 @@ function BrandsTab({
                 <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Name</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Description</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Created</th>
+                <th className="px-6 py-3 text-right text-sm font-semibold text-primary">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -355,6 +397,12 @@ function BrandsTab({
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {house.created_at ? formatDate(house.created_at) : '—'}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <Button variant="secondary" size="sm" onClick={() => onEdit(house)}>
+                      <Edit className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -373,16 +421,20 @@ function FragrancesTab({
   isLoading,
   error,
   showForm,
+  editingFragrance,
   onToggleForm,
-  onCreated,
+  onEdit,
+  onSaved,
   onCancel,
 }: {
   fragrances: Fragrance[];
   isLoading: boolean;
   error: string;
   showForm: boolean;
+  editingFragrance: Fragrance | null;
   onToggleForm: () => void;
-  onCreated: () => void;
+  onEdit: (frag: Fragrance) => void;
+  onSaved: () => void;
   onCancel: () => void;
 }) {
   if (isLoading) {
@@ -397,7 +449,7 @@ function FragrancesTab({
     <>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-primary">Fragrances</h2>
-        {!showForm && (
+        {!showForm && !editingFragrance && (
           <Button onClick={onToggleForm}>
             <Plus className="w-4 h-4 mr-2" />
             New Fragrance
@@ -407,7 +459,19 @@ function FragrancesTab({
 
       {showForm && (
         <div className="mb-6">
-          <FragranceEditor onSuccess={onCreated} onCancel={onCancel} />
+          <FragranceEditor onSuccess={onSaved} onCancel={onCancel} />
+        </div>
+      )}
+
+      {editingFragrance && (
+        <div className="mb-6">
+          <FragranceEditor
+            key={editingFragrance.id}
+            mode="edit"
+            fragrance={editingFragrance}
+            onSuccess={onSaved}
+            onCancel={onCancel}
+          />
         </div>
       )}
 
@@ -430,6 +494,7 @@ function FragrancesTab({
                 <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Rating</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Price</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Created</th>
+                <th className="px-6 py-3 text-right text-sm font-semibold text-primary">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -452,6 +517,12 @@ function FragrancesTab({
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {frag.created_at ? formatDate(frag.created_at) : '—'}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <Button variant="secondary" size="sm" onClick={() => onEdit(frag)}>
+                      <Edit className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
                   </td>
                 </tr>
               ))}

@@ -13,12 +13,12 @@ export default function Header() {
   ];
 
   const isActive = (href: string) => {
-    if (href === '/posts') return pathname === '/' || pathname.startsWith('/posts');
+    if (href === '/posts') return pathname.startsWith('/posts');
     return pathname.startsWith(href);
   };
 
   return (
-    <header className="bg-tertiary/30">
+    <header className="bg-tertiary/30 elevated-header">
       <div className="mx-6 py-5">
         <nav className="flex items-center gap-12">
           {/* Logo */}
