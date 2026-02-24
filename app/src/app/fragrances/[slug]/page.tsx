@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { createAdminSupabase } from '@/lib/supabase/admin';
+import { createServerSupabase } from '@/lib/supabase/server';
 import { getPosts } from '@/lib/api';
 
 // Cache each fragrance page for 5 minutes; rebuild on next request after expiry
@@ -8,7 +8,7 @@ export const revalidate = 300;
 
 // Pre-build all known fragrance slugs at deploy time for instant first loads
 export async function generateStaticParams() {
-  const supabase = createAdminSupabase();
+  const supabase = createServerSupabase();
   const { data } = await supabase.from('fragrances').select('slug');
   return (data ?? []).map((f) => ({ slug: f.slug }));
 }
@@ -46,7 +46,7 @@ type FragranceDetail = {
 };
 
 async function getFragranceBySlug(slug: string): Promise<FragranceDetail | null> {
-  const supabase = createAdminSupabase();
+  const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from('fragrances')
     .select('*, fragrance_houses(name, description)')
@@ -61,7 +61,7 @@ async function getFragranceBySlug(slug: string): Promise<FragranceDetail | null>
 }
 
 async function getFragranceNotes(fragranceId: string): Promise<NoteAssignment[]> {
-  const supabase = createAdminSupabase();
+  const supabase = createServerSupabase();
   const { data } = await supabase
     .from('fragrance_note_map')
     .select('note_id, position, sort_order, fragrance_notes(name)')
@@ -77,7 +77,7 @@ async function getFragranceNotes(fragranceId: string): Promise<NoteAssignment[]>
 }
 
 async function getFragranceImages(fragranceId: string): Promise<FragranceImage[]> {
-  const supabase = createAdminSupabase();
+  const supabase = createServerSupabase();
   const { data } = await supabase
     .from('fragrance_images')
     .select('url, alt_text, sort_order')
@@ -85,6 +85,15 @@ async function getFragranceImages(fragranceId: string): Promise<FragranceImage[]
     .order('sort_order', { ascending: true });
 
   return (data ?? []) as FragranceImage[];
+}
+
+function safeUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    return new URL(url).protocol === 'https:' ? url : null;
+  } catch {
+    return null;
+  }
 }
 
 function formatPrice(cents: number, currency: string): string {
@@ -256,9 +265,9 @@ export default async function FragrancePage({
                 </div>
               )}
               <div className="flex flex-wrap gap-2 pt-1">
-                {fragrance.fragrance_url && (
+                {safeUrl(fragrance.fragrance_url) && (
                   <a
-                    href={fragrance.fragrance_url}
+                    href={safeUrl(fragrance.fragrance_url)!}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-xs bg-secondary text-white px-3 py-1.5 rounded-full hover:bg-secondary/80 transition-colors"
@@ -267,9 +276,9 @@ export default async function FragrancePage({
                     <ExternalIcon className="w-3 h-3" />
                   </a>
                 )}
-                {fragrance.house_url && (
+                {safeUrl(fragrance.house_url) && (
                   <a
-                    href={fragrance.house_url}
+                    href={safeUrl(fragrance.house_url)!}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-xs border border-secondary/30 text-secondary px-3 py-1.5 rounded-full hover:bg-secondary/10 transition-colors"

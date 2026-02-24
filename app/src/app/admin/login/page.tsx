@@ -29,7 +29,8 @@ function LoginForm() {
       const data = await response.json();
 
       if (data.ok) {
-        const redirectTo = searchParams.get('from') || '/admin';
+        const raw = searchParams.get('from') || '/admin';
+        const redirectTo = raw.startsWith('/') && !raw.startsWith('//') ? raw : '/admin';
         router.push(redirectTo);
         router.refresh();
       } else {

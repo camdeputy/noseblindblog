@@ -8,7 +8,8 @@ export async function GET(request: NextRequest) {
   let query = supabase
     .from("fragrance_notes")
     .select("*")
-    .order("name", { ascending: true });
+    .order("name", { ascending: true })
+    .limit(100);
 
   if (q?.trim()) {
     query = query.ilike("name", `%${q.trim()}%`);

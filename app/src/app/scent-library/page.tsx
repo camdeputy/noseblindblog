@@ -4,8 +4,7 @@ import ScentLibraryClient, {
   type FragranceWithHouseName,
 } from './ScentLibraryClient';
 
-// Always render server-side so catalog changes are immediately visible
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 export default async function ScentLibraryPage() {
   const supabase = createServerSupabase();

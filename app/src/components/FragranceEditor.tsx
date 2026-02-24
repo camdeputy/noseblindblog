@@ -106,12 +106,13 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
     const priceNum = priceCents ? parseInt(priceCents, 10) : undefined;
     const sizeMlNum = sizeMl ? parseInt(sizeMl, 10) : undefined;
 
-    setIsSaving(true);
-    try {
-      if (!slug.trim()) {
+    if (!slug.trim()) {
       setError('Slug is required');
       return;
     }
+
+    setIsSaving(true);
+    try {
 
     const payload = {
         house_id: houseId,
