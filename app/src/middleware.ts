@@ -8,16 +8,12 @@ function buildCSP(nonce: string): string {
 
   return [
     `default-src 'self'`,
-    // nonce covers Next.js hydration scripts + our Script tags;
-    // strict-dynamic trusts anything loaded by those scripts (e.g. GA sub-scripts);
-    // unsafe-eval is required in dev only for React Fast Refresh (never in production)
+    // unsafe-eval required in dev for React Fast Refresh; never present in production
     `script-src 'nonce-${nonce}' 'strict-dynamic' https://www.googletagmanager.com 'self'${isDev ? ` 'unsafe-eval'` : ''}`,
     // unsafe-inline needed for Next.js critical CSS and inline style= attributes
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `font-src 'self' https://fonts.gstatic.com`,
-    // https: covers all remote fragrance images; blob: for Next.js image optimization
     `img-src 'self' https: data: blob:`,
-    // GA4 collection endpoints
     `connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://region1.google-analytics.com https://www.googletagmanager.com`,
     `frame-src 'none'`,
     `object-src 'none'`,
@@ -25,6 +21,35 @@ function buildCSP(nonce: string): string {
     `form-action 'self'`,
     `upgrade-insecure-requests`,
   ].join('; ');
+}
+
+function applySecurityHeaders(
+  response: NextResponse,
+  csp: string,
+  pathname: string,
+): NextResponse {
+  response.headers.set('Content-Security-Policy', csp);
+  response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+  response.headers.set('X-DNS-Prefetch-Control', 'off');
+  response.headers.set('X-Download-Options', 'noopen');
+  response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // Set to 0 to disable the legacy XSS auditor — enabling it introduces its own vulnerabilities
+  response.headers.set('X-XSS-Protection', '0');
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
+  );
+
+  if (pathname.startsWith('/api/')) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+
+  return response;
 }
 
 export function middleware(request: NextRequest) {
@@ -39,9 +64,7 @@ export function middleware(request: NextRequest) {
       const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
 
       if (!sessionCookie?.value) {
-        const response = redirectToLogin(request);
-        response.headers.set('Content-Security-Policy', csp);
-        return response;
+        return applySecurityHeaders(redirectToLogin(request), csp, pathname);
       }
 
       try {
@@ -49,27 +72,23 @@ export function middleware(request: NextRequest) {
         if (!session.exp || session.exp < Date.now()) {
           const response = redirectToLogin(request);
           response.cookies.delete(SESSION_COOKIE_NAME);
-          response.headers.set('Content-Security-Policy', csp);
-          return response;
+          return applySecurityHeaders(response, csp, pathname);
         }
       } catch {
         const response = redirectToLogin(request);
         response.cookies.delete(SESSION_COOKIE_NAME);
-        response.headers.set('Content-Security-Policy', csp);
-        return response;
+        return applySecurityHeaders(response, csp, pathname);
       }
     }
   }
 
-  // ── Forward nonce to server components via request header ─────────────────
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);
 
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
-  response.headers.set('Content-Security-Policy', csp);
-  return response;
+  return applySecurityHeaders(response, csp, pathname);
 }
 
 function redirectToLogin(request: NextRequest) {
@@ -87,6 +106,5 @@ function redirectToLogin(request: NextRequest) {
 }
 
 export const config = {
-  // Run on all routes except Next.js internals and static files
   matcher: ['/((?!_next/static|_next/image|favicon\\.ico).*)'],
 };
