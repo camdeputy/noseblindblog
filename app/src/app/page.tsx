@@ -64,7 +64,7 @@ export default async function HomePage() {
             Noseblind
           </h1>
           <p className="text-primary/70 text-center max-w-3xl text-lg relative z-10">
-            The state of being desensitized to a scent after prolonged exposure. A condition we all endure, yet one that makes the world of fragrance endlessly fascinating.
+            The state of being desensitized to a scent after prolonged exposure. A frustrating occurence that keeps us coming back for more.
           </p>
 
           <div className="mt-12 mb-8 relative z-10">
@@ -88,27 +88,27 @@ export default async function HomePage() {
               <JasmineSticker className="absolute top-10 right-0 w-14 h-14" />
               <VanillaSticker className="absolute bottom-0 right-2 w-14 h-14 opacity-80" />
             </div>
-            <p className="text-xs text-primary/50 mt-6 italic">Fig. 1 — Olfactory Composition</p>
           </div>
 
           {/* Text side */}
           <div className="py-16 px-8 md:px-12 flex flex-col justify-center">
             <h2 className="font-display text-4xl font-semibold text-primary mb-2">
-              Curating the
+              Let's get
             </h2>
             <h2 className="font-display text-4xl font-semibold text-secondary mb-8">
-              Unseen World
+              Anosmic
             </h2>
             <p className="text-primary/70 leading-relaxed mb-4">
-              Noseblind is more than a fragrance blog; it is a digital salon dedicated to the
-              olfactory arts. We believe that perfume is the most intimate form of
-              expression—an invisible accessory that announces your presence and lingers
-              in your absence.
+              Noseblind is more than a fragrance blog; it is a digital journal primarily dedicated to 
+              olfactory arts. I believe it is the most intimate form of expression, announcing our presence and 
+              lingering in our absence.
             </p>
             <p className="text-primary/70 leading-relaxed mb-8">
-              From the crisp aldehydes of vintage classics to the molecular minimalism of
-              modern niche houses, we dissect the notes that compose our memories. Join
-              us as we uncork the stories bottled within glass walls.
+              Join me on my fragrance journey as I sniff through and review my fragrance TBS (To Be Smelled). 
+              Together we will discover new favorites, and overwhelm our senses. Let's get to smelling!
+            </p>
+            <p className="text-primary/70 leading-relaxed mb-8">
+              - Anosmic
             </p>
             <Link
               href="/posts"
