@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'Privacy policy for Noseblind.',
 };
 
-const EFFECTIVE_DATE = 'February 24, 2026';
+const EFFECTIVE_DATE = 'February 26, 2026';
 
 export default function PrivacyPage() {
   return (
@@ -23,8 +23,10 @@ export default function PrivacyPage() {
 
       <Section title="Information We Collect">
         <p>
-          We do not collect any personal information you provide directly — there are no account
-          registrations, comment forms, or newsletter sign-ups on this site.
+          When you use the contact form on this Site, we collect the name, email address, and
+          message content you provide. This information is transmitted via{' '}
+          <strong>EmailJS</strong> directly to our inbox and is not stored in any database. It
+          is used solely to respond to your inquiry.
         </p>
         <p className="mt-4">
           We use <strong>Google Analytics 4</strong> (GA4), a web analytics service provided by
@@ -67,35 +69,50 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="How Your Information Is Used">
-        <p>The analytics data collected is used exclusively to:</p>
+        <p>Information collected through this Site is used exclusively to:</p>
         <ul className="list-disc list-inside mt-3 space-y-1 text-primary/80">
+          <li>Respond to inquiries submitted through the contact form</li>
           <li>Understand which content is most valuable to readers</li>
           <li>Identify technical issues such as broken pages</li>
           <li>Improve the overall experience of the site</li>
         </ul>
         <p className="mt-4">
-          We do not use this data for advertising, retargeting, or any form of profiling.
+          We do not use any data collected for advertising, retargeting, or any form of profiling.
         </p>
       </Section>
 
       <Section title="Third-Party Data Processors">
-        <p>
-          The only third party that receives data about your visit is <strong>Google LLC</strong>,
-          which processes analytics data on our behalf under its own privacy policy. Google may
-          transfer and store this data on servers located outside your country of residence.
-        </p>
-        <p className="mt-4">
-          Google's privacy policy is available at{' '}
-          <a
-            href="https://policies.google.com/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-secondary underline hover:text-primary transition-colors"
-          >
-            policies.google.com/privacy
-          </a>
-          .
-        </p>
+        <p>We work with the following third-party services that may receive data about you:</p>
+        <ul className="list-disc list-inside mt-3 space-y-3 text-primary/80">
+          <li>
+            <strong>Google LLC</strong> — processes analytics data on our behalf. Google may
+            transfer and store this data on servers outside your country of residence. Their
+            privacy policy is available at{' '}
+            <a
+              href="https://policies.google.com/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-secondary underline hover:text-primary transition-colors"
+            >
+              policies.google.com/privacy
+            </a>
+            .
+          </li>
+          <li>
+            <strong>EmailJS</strong> — processes contact form submissions to deliver your message
+            to our inbox. EmailJS does not retain your message content after delivery. Their
+            privacy policy is available at{' '}
+            <a
+              href="https://www.emailjs.com/legal/privacy-policy/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-secondary underline hover:text-primary transition-colors"
+            >
+              emailjs.com/legal/privacy-policy
+            </a>
+            .
+          </li>
+        </ul>
       </Section>
 
       <Section title="California Residents (CCPA)">
@@ -110,8 +127,9 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Right to Delete</strong> — You may request deletion of personal information
-            we have collected. Note that analytics data held by Google is subject to Google's own
-            retention and deletion policies.
+            we have collected. Contact form submissions are not retained by us beyond email
+            delivery. Analytics data held by Google is subject to Google's own retention and
+            deletion policies.
           </li>
           <li>
             <strong>Right to Opt Out of Sale</strong> — We do not sell personal information.
@@ -150,7 +168,14 @@ export default function PrivacyPage() {
         <p>
           This site is not directed at children under 13. We do not knowingly collect any
           information from children. If you believe a child has provided information through this
-          site, please contact us so we can address it promptly.
+          site, please contact us at{' '}
+          <a
+            href="mailto:anosmic@noseblindblog.com"
+            className="text-secondary underline hover:text-primary transition-colors"
+          >
+            anosmic@noseblindblog.com
+          </a>{' '}
+          so we can address it promptly.
         </p>
       </Section>
 
@@ -159,6 +184,20 @@ export default function PrivacyPage() {
           We may update this policy as the site evolves. When we do, the effective date at the
           top of this page will be updated. Material changes will be noted here. Continued use
           of the site after any change constitutes acceptance of the updated policy.
+        </p>
+      </Section>
+
+      <Section title="Contact Us">
+        <p>
+          If you have questions or concerns about this privacy policy, or would like to exercise
+          any of your rights, please contact us at{' '}
+          <a
+            href="mailto:anosmic@noseblindblog.com"
+            className="text-secondary underline hover:text-primary transition-colors"
+          >
+            anosmic@noseblindblog.com
+          </a>
+          .
         </p>
       </Section>
     </div>
