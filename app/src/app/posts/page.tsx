@@ -42,7 +42,7 @@ function PostCard({ post, index }: PostCardProps) {
     >
       {/* Card number display */}
       <div className="aspect-4/3 bg-tertiary/50 flex items-center justify-center relative overflow-hidden card-image-depth">
-        <span className="font-display text-8xl text-secondary/20 group-hover:text-secondary/30 transition-colors">
+        <span className="font-display text-6xl sm:text-8xl text-secondary/20 group-hover:text-secondary/30 transition-colors">
           {String(index + 1).padStart(2, '0')}
         </span>
         {/* Decorative corner */}
@@ -114,21 +114,23 @@ export default async function PostsPage() {
         {/* Radial depth gradient */}
         <div className="absolute inset-0 pointer-events-none" style={{background: 'radial-gradient(ellipse 80% 55% at 50% 42%, rgba(244,191,219,0.22) 0%, transparent 68%)'}} aria-hidden="true" />
         {/* Decorative elements */}
-        <StarSticker className="absolute top-16 left-[10%] w-6 h-6" />
-        <StarSticker className="absolute top-24 left-[15%] w-4 h-4" />
-        <StarSticker className="absolute top-20 right-[12%] w-5 h-5" />
-        <StarSticker className="absolute top-32 right-[18%] w-3 h-3" />
-        <FloralAccent className="absolute top-8 right-[8%] w-20 h-20 opacity-60" />
-        <FloralAccent className="absolute bottom-4 left-[5%] w-16 h-16 opacity-40 rotate-45" />
+        <div className="hidden sm:contents">
+          <StarSticker className="absolute top-16 left-[10%] w-6 h-6" />
+          <StarSticker className="absolute top-24 left-[15%] w-4 h-4" />
+          <StarSticker className="absolute top-20 right-[12%] w-5 h-5" />
+          <StarSticker className="absolute top-32 right-[18%] w-3 h-3" />
+          <FloralAccent className="absolute top-8 right-[8%] w-20 h-20 opacity-60" />
+          <FloralAccent className="absolute bottom-4 left-[5%] w-16 h-16 opacity-40 rotate-45" />
+        </div>
 
         <div className="relative max-w-4xl mx-auto px-6 py-20 text-center">
           <p className="text-sm tracking-widest text-secondary mb-4 uppercase">
             The Journal
           </p>
-          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-semibold text-primary leading-tight mb-6">
+          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold text-primary leading-tight mb-6">
             Stories & <span className="text-secondary">Discoveries</span>
           </h1>
-          <p className="text-primary/60 max-w-xl mx-auto text-lg leading-relaxed">
+          <p className="text-primary/60 max-w-xl mx-auto text-base sm:text-lg leading-relaxed">
             Dive into our collection of thoughts on fragrance, creativity,
             and the art of sensory experience.
           </p>
@@ -186,7 +188,7 @@ export default async function PostsPage() {
       {/* Bottom decorative section */}
       <section className="bg-tertiary/50 py-16 mt-8 quote-section">
         <div className="max-w-2xl mx-auto px-6 text-center">
-          <p className="font-display text-2xl text-primary/80 italic">
+          <p className="font-display text-xl sm:text-2xl text-primary/80 italic">
             "Perfume is the art that makes memory speak."
           </p>
           <p className="text-sm text-primary/50 mt-4">— Noseblind Journal</p>

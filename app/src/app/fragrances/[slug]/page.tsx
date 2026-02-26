@@ -151,10 +151,12 @@ export default async function FragrancePage({
         {/* Radial depth gradient */}
         <div className="absolute inset-0 pointer-events-none" style={{background: 'radial-gradient(ellipse 80% 55% at 50% 42%, rgba(244,191,219,0.22) 0%, transparent 68%)'}} aria-hidden="true" />
         {/* Decorative — right side only, leaves left clear for text */}
-        <FloralAccent className="absolute top-4 right-[5%] w-28 h-28 opacity-35" />
-        <FloralAccent className="absolute bottom-0 right-[20%] w-16 h-16 opacity-20 rotate-45" />
-        <StarSticker className="absolute top-16 right-[10%] w-5 h-5" />
-        <StarSticker className="absolute top-28 right-[17%] w-3 h-3" />
+        <div className="hidden sm:contents">
+          <FloralAccent className="absolute top-4 right-[5%] w-28 h-28 opacity-35" />
+          <FloralAccent className="absolute bottom-0 right-[20%] w-16 h-16 opacity-20 rotate-45" />
+          <StarSticker className="absolute top-16 right-[10%] w-5 h-5" />
+          <StarSticker className="absolute top-28 right-[17%] w-3 h-3" />
+        </div>
 
         <div className="relative max-w-6xl mx-auto px-6 pt-10 pb-14">
           {/* Breadcrumb */}
@@ -171,7 +173,7 @@ export default async function FragrancePage({
           {/* Editorial header block */}
           <div className="mt-8 max-w-4xl">
             {/* One typographic line: italic house · bold fragrance, all Cormorant Garamond */}
-            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl leading-tight tracking-tight">
+            <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight tracking-tight">
               {fragrance.fragrance_houses?.name && (
                 <>
                   <span className="italic font-normal text-secondary/75">
@@ -213,7 +215,7 @@ export default async function FragrancePage({
 
       {/* Main content: image left, details right */}
       <section className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 md:gap-16 items-start">
 
           {/* Left: Image */}
           <div className="flex flex-col gap-4">
@@ -343,7 +345,7 @@ export default async function FragrancePage({
       {reviewPost && (
         <section className="max-w-6xl mx-auto px-6 pb-16">
           <div className="border-t border-secondary/10 pt-12">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
               <div>
                 <SectionLabel>Our Review</SectionLabel>
                 <h2 className="font-display text-2xl md:text-3xl font-semibold text-primary">
@@ -383,7 +385,7 @@ export default async function FragrancePage({
       {/* Footer quote */}
       <section className="bg-tertiary/50 py-16 mt-8 quote-section">
         <div className="max-w-2xl mx-auto px-6 text-center">
-          <p className="font-display text-2xl text-primary/80 italic">
+          <p className="font-display text-xl sm:text-2xl text-primary/80 italic">
             &ldquo;Perfume is the art that makes memory speak.&rdquo;
           </p>
           <p className="text-sm text-primary/50 mt-4">— The Noseblind Collection</p>

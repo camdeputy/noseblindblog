@@ -28,19 +28,21 @@ export default function AboutPage() {
           aria-hidden="true"
         />
 
-        <RoseSticker    className="absolute top-12 left-[8%] w-16 h-16" />
-        <LavenderSticker className="absolute top-[42%] left-[5%] w-8 h-20" />
-        <StarSticker    className="absolute top-[22%] left-[28%] w-5 h-5" />
-        <StarSticker    className="absolute top-[17%] left-[33%] w-3 h-3" />
-        <JasmineSticker className="absolute top-10 right-[7%] w-20 h-20" />
-        <StarSticker    className="absolute top-[20%] right-[30%] w-4 h-4" />
-        <StarSticker    className="absolute top-[26%] right-[27%] w-3 h-3" />
-        <VanillaSticker className="absolute top-[48%] right-[5%] w-24 h-24" />
-        <MoleculeSticker className="absolute bottom-[18%] right-[10%] w-10 h-10" />
-        <CitrusSticker  className="absolute bottom-[8%] left-[7%] w-24 h-24" />
+        <div className="hidden sm:contents">
+          <RoseSticker    className="absolute top-12 left-[8%] w-16 h-16" />
+          <LavenderSticker className="absolute top-[42%] left-[5%] w-8 h-20" />
+          <StarSticker    className="absolute top-[22%] left-[28%] w-5 h-5" />
+          <StarSticker    className="absolute top-[17%] left-[33%] w-3 h-3" />
+          <JasmineSticker className="absolute top-10 right-[7%] w-20 h-20" />
+          <StarSticker    className="absolute top-[20%] right-[30%] w-4 h-4" />
+          <StarSticker    className="absolute top-[26%] right-[27%] w-3 h-3" />
+          <VanillaSticker className="absolute top-[48%] right-[5%] w-24 h-24" />
+          <MoleculeSticker className="absolute bottom-[18%] right-[10%] w-10 h-10" />
+          <CitrusSticker  className="absolute bottom-[8%] left-[7%] w-24 h-24" />
+        </div>
 
         <div className="relative max-w-3xl mx-auto px-6 py-24 text-center">
-          <h1 className="font-display text-6xl md:text-7xl font-semibold text-primary leading-tight mb-3">
+          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-semibold text-primary leading-tight mb-3">
             Welcome to Noseblind
           </h1>
           <div className="flex items-center justify-center gap-4 my-6">
@@ -61,7 +63,7 @@ export default function AboutPage() {
 
           {/* Illustration cluster */}
           <div className="flex flex-col items-center justify-center relative py-16 px-8 illustration-depth">
-            <div className="relative w-56 h-56">
+            <div className="relative w-40 h-40 sm:w-56 sm:h-56">
               <CitrusSticker   className="absolute top-2 left-6 w-32 h-32" />
               <RoseSticker     className="absolute top-24 -left-2 w-24 h-24" />
               <MoleculeSticker className="absolute top-0 right-2 w-12 h-12" />
@@ -146,7 +148,7 @@ export default function AboutPage() {
             {/* Favorite Notes */}
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h3 className="font-display text-xl font-semibold text-primary whitespace-nowrap">Notes I Love</h3>
+                <h3 className="font-display text-xl font-semibold text-primary">Notes I Love</h3>
                 <div className="h-px flex-1 bg-secondary/25" />
               </div>
               <p className="text-xs text-primary/45 mb-5 leading-relaxed">
@@ -167,7 +169,7 @@ export default function AboutPage() {
             {/* Disliked Notes */}
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h3 className="font-display text-xl font-semibold text-primary whitespace-nowrap">Notes I Avoid</h3>
+                <h3 className="font-display text-xl font-semibold text-primary">Notes I Avoid</h3>
                 <div className="h-px flex-1 bg-primary/12" />
               </div>
               <p className="text-xs text-primary/45 mb-5 leading-relaxed">

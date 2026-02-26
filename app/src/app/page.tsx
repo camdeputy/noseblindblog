@@ -23,52 +23,36 @@ export default async function HomePage() {
       <section className="relative overflow-hidden">
         {/* Radial depth gradient — warms the center behind headings */}
         <div className="absolute inset-0 pointer-events-none" style={{background: 'radial-gradient(ellipse 80% 55% at 50% 42%, rgba(244,191,219,0.22) 0%, transparent 68%)'}} aria-hidden="true" />
-        <div className="relative min-h-[85vh] flex flex-col items-center justify-center py-20 px-8">
+        <div className="relative min-h-[85vh] flex flex-col items-center justify-center py-12 sm:py-20 px-6 sm:px-8">
 
-          {/* ── Individual stickers placed around the hero ── */}
-
-          {/* Top-left: Rose (like the perfume/drop icon in reference) */}
-          <RoseSticker className="absolute top-12 left-[8%] w-20 h-20" />
-
-          {/* Left mid: Lavender stalk */}
-          <LavenderSticker className="absolute top-[45%] left-[6%] w-10 h-24" />
-
-          {/* Small star accent near the heading, top-left area */}
-          <StarSticker className="absolute top-[22%] left-[30%] w-5 h-5" color="#B27092" />
-          <StarSticker className="absolute top-[18%] left-[34%] w-3 h-3" color="#B27092" />
-
-          {/* Top-right: Jasmine flower (like the star/flower in reference) */}
-          <JasmineSticker className="absolute top-10 right-[6%] w-24 h-24" />
-
-          {/* Small star near heading top-right */}
-          <StarSticker className="absolute top-[20%] right-[32%] w-4 h-4" color="#B27092" />
-          <StarSticker className="absolute top-[24%] right-[30%] w-6 h-6" color="#B27092" />
-
-          {/* Right mid: Vanilla (curved lines, like the arcing lines in reference) */}
-          <VanillaSticker className="absolute top-[50%] right-[5%] w-28 h-28" />
-
-          {/* Small molecule below vanilla on right */}
-          <MoleculeSticker className="absolute top-[65%] right-[10%] w-12 h-12" />
-
-          {/* Bottom-left: Citrus (circle diagram, like reference bottom-left) */}
-          <CitrusSticker className="absolute bottom-[8%] left-[8%] w-28 h-28" />
-
-          {/* Small star accent near bottom-left citrus */}
-          <StarSticker className="absolute bottom-[28%] left-[18%] w-4 h-4" color="#B27092" />
+          {/* ── Individual stickers placed around the hero — hidden on mobile ── */}
+          <div className="hidden sm:contents">
+            <RoseSticker className="absolute top-12 left-[8%] w-20 h-20" />
+            <LavenderSticker className="absolute top-[45%] left-[6%] w-10 h-24" />
+            <StarSticker className="absolute top-[22%] left-[30%] w-5 h-5" color="#B27092" />
+            <StarSticker className="absolute top-[18%] left-[34%] w-3 h-3" color="#B27092" />
+            <JasmineSticker className="absolute top-10 right-[6%] w-24 h-24" />
+            <StarSticker className="absolute top-[20%] right-[32%] w-4 h-4" color="#B27092" />
+            <StarSticker className="absolute top-[24%] right-[30%] w-6 h-6" color="#B27092" />
+            <VanillaSticker className="absolute top-[50%] right-[5%] w-28 h-28" />
+            <MoleculeSticker className="absolute top-[65%] right-[10%] w-12 h-12" />
+            <CitrusSticker className="absolute bottom-[8%] left-[8%] w-28 h-28" />
+            <StarSticker className="absolute bottom-[28%] left-[18%] w-4 h-4" color="#B27092" />
+          </div>
 
           {/* ── Content ── */}
           <p className="text-sm tracking-widest text-secondary mb-4 uppercase relative z-10">
             Est. 2026 &middot; Fragrance Library
           </p>
-          <h1 className="font-display text-6xl md:text-7xl lg:text-8xl font-semibold text-primary text-center leading-tight mb-6 relative z-10">
+          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-semibold text-primary text-center leading-tight mb-6 relative z-10">
             Noseblind
           </h1>
-          <p className="text-primary/70 text-center max-w-3xl text-lg relative z-10">
+          <p className="text-primary/70 text-center max-w-3xl text-base sm:text-lg relative z-10">
             The state of being desensitized to a scent after prolonged exposure. A frustrating occurence that keeps us coming back for more.
           </p>
 
           <div className="mt-12 mb-8 relative z-10">
-            <PerfumeBottle className="w-48 h-48 text-primary/30" />
+            <PerfumeBottle className="w-28 h-28 sm:w-48 sm:h-48 text-primary/30" />
           </div>
         </div>
       </section>
@@ -92,19 +76,13 @@ export default async function HomePage() {
 
           {/* Text side */}
           <div className="py-16 px-8 md:px-12 flex flex-col justify-center">
-            <h2 className="font-display text-4xl font-semibold text-primary mb-2">
-              Let's get
-            </h2>
-            <h2 className="font-display text-4xl font-semibold text-secondary mb-8">
-              Anosmic
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-primary mb-2">
+              Let's get <span className="text-secondary">Anosmic</span>
             </h2>
             <p className="text-primary/70 leading-relaxed mb-4">
               Noseblind is more than a fragrance blog; it is a digital journal primarily dedicated to 
               olfactory arts. I believe it is the most intimate form of expression, announcing our presence and 
-              lingering in our absence.
-            </p>
-            <p className="text-primary/70 leading-relaxed mb-8">
-              Join me on my fragrance journey as I sniff through and review my fragrance TBS (To Be Smelled). 
+              lingering in our absence. Join me on my fragrance journey as I sniff through and review my fragrance TBS (To Be Smelled). 
               Together we will discover new favorites, and overwhelm our senses. Let's get to smelling!
             </p>
             <p className="text-primary/70 leading-relaxed mb-8">
@@ -124,7 +102,7 @@ export default async function HomePage() {
       {/* Latest Posts Section */}
       <section className="px-6 py-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="font-display text-2xl font-semibold text-primary">Latest Posts</h2>
+          <h2 className="font-display text-xl sm:text-2xl font-semibold text-primary">Latest Posts</h2>
           <Link href="/posts" className="text-sm font-medium text-primary/70 hover:text-primary transition-colors">
             Show All
           </Link>

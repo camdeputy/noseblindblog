@@ -83,21 +83,23 @@ export default function ScentLibraryClient({ houses, recentFragrances, available
       <section className="relative overflow-hidden">
         {/* Radial depth gradient */}
         <div className="absolute inset-0 pointer-events-none" style={{background: 'radial-gradient(ellipse 80% 55% at 50% 42%, rgba(244,191,219,0.22) 0%, transparent 68%)'}} aria-hidden="true" />
-        <StarSticker className="absolute top-12 left-[8%] w-6 h-6" />
-        <StarSticker className="absolute top-20 left-[12%] w-4 h-4" />
-        <StarSticker className="absolute top-16 right-[10%] w-5 h-5" />
-        <StarSticker className="absolute top-28 right-[15%] w-3 h-3" />
-        <FloralAccent className="absolute top-4 right-[5%] w-24 h-24 opacity-50" />
-        <FloralAccent className="absolute bottom-0 left-[3%] w-20 h-20 opacity-30 -rotate-12" />
+        <div className="hidden sm:contents">
+          <StarSticker className="absolute top-12 left-[8%] w-6 h-6" />
+          <StarSticker className="absolute top-20 left-[12%] w-4 h-4" />
+          <StarSticker className="absolute top-16 right-[10%] w-5 h-5" />
+          <StarSticker className="absolute top-28 right-[15%] w-3 h-3" />
+          <FloralAccent className="absolute top-4 right-[5%] w-24 h-24 opacity-50" />
+          <FloralAccent className="absolute bottom-0 left-[3%] w-20 h-20 opacity-30 -rotate-12" />
+        </div>
 
-        <div className="relative max-w-5xl mx-auto px-6 py-16 text-center">
+        <div className="relative max-w-5xl mx-auto px-6 py-10 sm:py-16 text-center">
           <p className="text-sm tracking-widest text-secondary mb-4 uppercase">
             Browse by House
           </p>
-          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-semibold text-primary leading-tight mb-6">
+          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold text-primary leading-tight mb-6">
             Scent <span className="text-secondary">Library</span>
           </h1>
-          <p className="text-primary/60 max-w-xl mx-auto text-lg leading-relaxed mb-8">
+          <p className="text-primary/60 max-w-xl mx-auto text-base sm:text-lg leading-relaxed mb-8">
             Explore our curated collection of fragrance houses and their finest creations.
           </p>
 
@@ -129,12 +131,12 @@ export default function ScentLibraryClient({ houses, recentFragrances, available
       {/* Alphabet Filter — hidden while searching */}
       {!isSearching && (
         <section className="sticky top-0 z-40 bg-tertiary/80 backdrop-blur-sm border-y border-secondary/10 filter-bar-shadow">
-          <div className="max-w-6xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-center gap-1 md:gap-2 flex-wrap">
+          <div className="max-w-6xl mx-auto px-3 py-2 sm:px-4 sm:py-4">
+            <div className="flex items-center justify-center gap-0.5 sm:gap-1 md:gap-2 flex-wrap">
               <button
                 onClick={() => setSelectedFilter(selectedFilter === 'recent' ? null : 'recent')}
                 className={`
-                  w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
+                  w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
                   transition-all duration-300 text-sm
                   ${selectedFilter === 'recent'
                     ? 'bg-secondary text-white scale-110'
@@ -158,8 +160,8 @@ export default function ScentLibraryClient({ houses, recentFragrances, available
                     onClick={() => isAvailable && setSelectedFilter(isSelected ? null : letter)}
                     disabled={!isAvailable}
                     className={`
-                      w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
-                      font-display text-sm md:text-base font-medium
+                      w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
+                      font-display text-xs sm:text-sm md:text-base font-medium
                       transition-all duration-300
                       ${isSelected
                         ? 'bg-primary text-white scale-110'
@@ -240,7 +242,7 @@ export default function ScentLibraryClient({ houses, recentFragrances, available
       {/* Footer quote */}
       <section className="bg-tertiary/50 py-16 mt-8 quote-section">
         <div className="max-w-2xl mx-auto px-6 text-center">
-          <p className="font-display text-2xl text-primary/80 italic">
+          <p className="font-display text-xl sm:text-2xl text-primary/80 italic">
             &ldquo;A fragrance is like a signature, a statement of who you are.&rdquo;
           </p>
           <p className="text-sm text-primary/50 mt-4">— The Noseblind Collection</p>
@@ -371,7 +373,7 @@ function HouseRow({ house, isReversed, index }: HouseRowProps) {
 
   return (
     <div
-      className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start py-8 border-b border-secondary/10 last:border-b-0"
+      className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-start py-8 border-b border-secondary/10 last:border-b-0"
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {isReversed ? (
