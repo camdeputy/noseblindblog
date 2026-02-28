@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import GoogleAnalytics from '@/components/GoogleAnalytics';
+import CookieConsentBanner from '@/components/CookieConsentBanner';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-white">
-        <GoogleAnalytics nonce={nonce} />
+        <CookieConsentBanner nonce={nonce} />
         <Header />
         <main className="flex-grow">{children}</main>
         <Footer />
