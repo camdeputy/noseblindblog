@@ -381,16 +381,6 @@ export default async function FragrancePage({
           </div>
         </section>
       )}
-
-      {/* Footer quote */}
-      <section className="bg-tertiary/50 py-16 mt-8 quote-section">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <p className="font-display text-xl sm:text-2xl text-primary/80 italic">
-            &ldquo;Perfume is the art that makes memory speak.&rdquo;
-          </p>
-          <p className="text-sm text-primary/50 mt-4">— The Noseblind Collection</p>
-        </div>
-      </section>
     </div>
   );
 }

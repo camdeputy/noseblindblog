@@ -93,9 +93,6 @@ export default function ScentLibraryClient({ houses, recentFragrances, available
         </div>
 
         <div className="relative max-w-5xl mx-auto px-6 py-10 sm:py-16 text-center">
-          <p className="text-sm tracking-widest text-secondary mb-4 uppercase">
-            Browse by House
-          </p>
           <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold text-primary leading-tight mb-6">
             Scent <span className="text-secondary">Library</span>
           </h1>
@@ -237,16 +234,6 @@ export default function ScentLibraryClient({ houses, recentFragrances, available
             </div>
           </>
         )}
-      </section>
-
-      {/* Footer quote */}
-      <section className="bg-tertiary/50 py-16 mt-8 quote-section">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <p className="font-display text-xl sm:text-2xl text-primary/80 italic">
-            &ldquo;A fragrance is like a signature, a statement of who you are.&rdquo;
-          </p>
-          <p className="text-sm text-primary/50 mt-4">— The Noseblind Collection</p>
-        </div>
       </section>
     </div>
   );

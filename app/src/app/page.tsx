@@ -48,7 +48,7 @@ export default async function HomePage() {
             Noseblind
           </h1>
           <p className="text-primary/70 text-center max-w-3xl text-base sm:text-lg relative z-10">
-            The state of being desensitized to a scent after prolonged exposure. A frustrating occurence that keeps us coming back for more.
+            The state of being desensitized to a scent after prolonged exposure. A frustrating occurence, but one that keeps us coming back for more.
           </p>
 
           <div className="mt-12 mb-8 relative z-10">
@@ -83,7 +83,7 @@ export default async function HomePage() {
               Noseblind is more than a fragrance blog; it is a digital journal primarily dedicated to 
               olfactory arts. I believe it is the most intimate form of expression, announcing our presence and 
               lingering in our absence. Join me on my fragrance journey as I sniff through and review my fragrance TBS (To Be Smelled). 
-              Together we will discover new favorites, and overwhelm our senses. Let's get to smelling!
+              Together we will discover new favorites, and overwhelm our senses (but on a real note, sniff responsibly). Let's get to smelling!
             </p>
             <p className="text-primary/70 leading-relaxed mb-8">
               - Anosmic

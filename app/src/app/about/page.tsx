@@ -8,12 +8,12 @@ export const metadata: Metadata = {
 };
 
 const FAVORITE_NOTES = [
-  'Rose', 'Peach', 'Musk', 'Tea', 'Lychee', 'Mango'
+  'Rose', 'Peach', 'Musk', 'Tea', 'Lychee', 'Mango', 'Passionfruit'
 ];
 
 const DISLIKED_NOTES = [
   'Jasmine', 'Raspberry', 'Lavendar', 'Marshmallow',
-  'Patchouli'
+  'Patchouli', 'Cotton Candy'
 ];
 
 export default function AboutPage() {
@@ -139,7 +139,7 @@ export default function AboutPage() {
             <p className="text-sm tracking-widest text-secondary uppercase mb-3">Olfactory Profile</p>
             <h2 className="font-display text-3xl font-semibold text-primary mb-2">My Scent Preferences</h2>
             <p className="text-sm text-primary/50 max-w-sm mx-auto">
-              The notes that define my taste — and the ones I tend to avoid.
+              The notes that define my taste and the ones I tend to avoid.
             </p>
           </div>
 
@@ -151,9 +151,6 @@ export default function AboutPage() {
                 <h3 className="font-display text-xl font-semibold text-primary">Notes I Love</h3>
                 <div className="h-px flex-1 bg-secondary/25" />
               </div>
-              <p className="text-xs text-primary/45 mb-5 leading-relaxed">
-                The ingredients that make me reach for a bottle again and again.
-              </p>
               <div className="flex flex-wrap gap-2">
                 {FAVORITE_NOTES.map((note) => (
                   <span
@@ -172,9 +169,6 @@ export default function AboutPage() {
                 <h3 className="font-display text-xl font-semibold text-primary">Notes I Avoid</h3>
                 <div className="h-px flex-1 bg-primary/12" />
               </div>
-              <p className="text-xs text-primary/45 mb-5 leading-relaxed">
-                Accords that rarely work on my skin or simply aren't for me.
-              </p>
               <div className="flex flex-wrap gap-2">
                 {DISLIKED_NOTES.map((note) => (
                   <span
