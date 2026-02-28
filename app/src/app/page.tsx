@@ -48,7 +48,7 @@ export default async function HomePage() {
             Noseblind
           </h1>
           <p className="text-primary/70 text-center max-w-3xl text-base sm:text-lg relative z-10">
-            The state of being desensitized to a scent after prolonged exposure. A frustrating occurence, but one that keeps us coming back for more.
+            The state of being desensitized to a scent after prolonged exposure. A frustrating occurence, but one that keeps us coming back for more
           </p>
 
           <div className="mt-12 mb-8 relative z-10">

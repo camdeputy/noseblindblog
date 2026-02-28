@@ -131,8 +131,7 @@ export default async function PostsPage() {
             Stories & <span className="text-secondary">Discoveries</span>
           </h1>
           <p className="text-primary/60 max-w-xl mx-auto text-base sm:text-lg leading-relaxed">
-            Dive into our collection of thoughts on fragrance, creativity,
-            and the art of sensory experience.
+            Reviews, scent science, and more opinions of mine
           </p>
         </div>
       </section>

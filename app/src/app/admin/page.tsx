@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Edit, Loader2, LogOut } from 'lucide-react';
+import { Plus, Edit, Loader2, LogOut, Search, X } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import HouseEditor from '@/components/HouseEditor';
@@ -231,6 +231,9 @@ function PostsTab({
   isLoading: boolean;
   error: string;
 }) {
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -238,6 +241,16 @@ function PostsTab({
       </div>
     );
   }
+
+  const q = search.trim().toLowerCase();
+  const filtered = posts.filter((p) => {
+    const matchesStatus = !statusFilter || p.status === statusFilter;
+    const matchesSearch =
+      !q ||
+      p.title.toLowerCase().includes(q) ||
+      p.slug.toLowerCase().includes(q);
+    return matchesStatus && matchesSearch;
+  });
 
   return (
     <>
@@ -251,6 +264,38 @@ function PostsTab({
         </Link>
       </div>
 
+      {!error && (
+        <div className="flex gap-3 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search posts..."
+              className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="py-2 pl-3 pr-8 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 text-gray-600 bg-white"
+          >
+            <option value="">All statuses</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
+      )}
+
       {error ? (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
           {error}
@@ -262,6 +307,8 @@ function PostsTab({
             <Button>Create your first post</Button>
           </Link>
         </div>
+      ) : filtered.length === 0 ? (
+        <p className="text-sm text-gray-500 py-6 text-center">No posts match your filters.</p>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <table className="w-full">
@@ -275,7 +322,7 @@ function PostsTab({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {posts.map((post) => (
+              {filtered.map((post) => (
                 <tr key={post.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div>
@@ -331,6 +378,8 @@ function BrandsTab({
   onSaved: () => void;
   onCancel: () => void;
 }) {
+  const [search, setSearch] = useState('');
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -338,6 +387,15 @@ function BrandsTab({
       </div>
     );
   }
+
+  const q = search.trim().toLowerCase();
+  const filtered = q
+    ? houses.filter(
+        (h) =>
+          h.name.toLowerCase().includes(q) ||
+          (h.description ?? '').toLowerCase().includes(q)
+      )
+    : houses;
 
   return (
     <>
@@ -368,6 +426,27 @@ function BrandsTab({
         </div>
       )}
 
+      {!showForm && !editingHouse && houses.length > 0 && (
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search brands..."
+            className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      )}
+
       {error ? (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
           {error}
@@ -377,6 +456,8 @@ function BrandsTab({
           <p className="text-gray-500 text-lg mb-4">No brands yet.</p>
           <Button onClick={onToggleForm}>Create your first brand</Button>
         </div>
+      ) : filtered.length === 0 ? (
+        <p className="text-sm text-gray-500 py-6 text-center">No brands match &ldquo;{search}&rdquo;.</p>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <table className="w-full">
@@ -389,7 +470,7 @@ function BrandsTab({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {houses.map((house) => (
+              {filtered.map((house) => (
                 <tr key={house.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 font-medium text-primary">{house.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">
@@ -437,6 +518,9 @@ function FragrancesTab({
   onSaved: () => void;
   onCancel: () => void;
 }) {
+  const [search, setSearch] = useState('');
+  const [brandFilter, setBrandFilter] = useState('');
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -444,6 +528,20 @@ function FragrancesTab({
       </div>
     );
   }
+
+  const brandNames = Array.from(
+    new Set(fragrances.map((f) => f.fragrance_houses?.name).filter(Boolean) as string[])
+  ).sort();
+
+  const q = search.trim().toLowerCase();
+  const filtered = fragrances.filter((f) => {
+    const matchesBrand = !brandFilter || f.fragrance_houses?.name === brandFilter;
+    const matchesSearch =
+      !q ||
+      f.name.toLowerCase().includes(q) ||
+      (f.description ?? '').toLowerCase().includes(q);
+    return matchesBrand && matchesSearch;
+  });
 
   return (
     <>
@@ -475,6 +573,41 @@ function FragrancesTab({
         </div>
       )}
 
+      {!showForm && !editingFragrance && fragrances.length > 0 && (
+        <div className="flex gap-3 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search fragrances..."
+              className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          {brandNames.length > 0 && (
+            <select
+              value={brandFilter}
+              onChange={(e) => setBrandFilter(e.target.value)}
+              className="py-2 pl-3 pr-8 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 text-gray-600 bg-white"
+            >
+              <option value="">All brands</option>
+              {brandNames.map((name) => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
+
       {error ? (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
           {error}
@@ -484,6 +617,8 @@ function FragrancesTab({
           <p className="text-gray-500 text-lg mb-4">No fragrances yet.</p>
           <Button onClick={onToggleForm}>Create your first fragrance</Button>
         </div>
+      ) : filtered.length === 0 ? (
+        <p className="text-sm text-gray-500 py-6 text-center">No fragrances match your filters.</p>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <table className="w-full">
@@ -498,7 +633,7 @@ function FragrancesTab({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {fragrances.map((frag) => (
+              {filtered.map((frag) => (
                 <tr key={frag.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <p className="font-medium text-primary">{frag.name}</p>

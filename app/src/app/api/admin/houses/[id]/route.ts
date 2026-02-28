@@ -61,6 +61,12 @@ export async function DELETE(
     .eq("id", id);
 
   if (error) {
+    if (error.code === "23503") {
+      return NextResponse.json(
+        { ok: false, error: "Please delete all fragrances from this house first." },
+        { status: 409 }
+      );
+    }
     return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
   }
 

@@ -97,7 +97,7 @@ export default function ScentLibraryClient({ houses, recentFragrances, available
             Scent <span className="text-secondary">Library</span>
           </h1>
           <p className="text-primary/60 max-w-xl mx-auto text-base sm:text-lg leading-relaxed mb-8">
-            Explore our curated collection of fragrance houses and their finest creations.
+            Explore and discover your favorite fragrance houses
           </p>
 
           {/* Search Bar */}
@@ -296,57 +296,54 @@ function HouseRow({ house, isReversed, index }: HouseRowProps) {
   const fragrancesContent = (
     <div className="flex-1">
       {house.fragrances.length > 0 ? (
-        <div className="space-y-4">
+        <div>
           <h3 className="font-display text-lg font-medium text-primary/70 mb-4">Fragrances</h3>
-          {house.fragrances.slice(0, 3).map((fragrance) => (
-            <Link
-              key={fragrance.id}
-              href={`/fragrances/${fragrance.slug}`}
-              className="group block bg-white/50 hover:bg-tertiary/60 border border-secondary/10 hover:border-secondary/30 rounded-lg p-4 transition-all duration-300 card-shadow"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <h4 className="font-display text-lg font-semibold text-primary group-hover:text-secondary transition-colors">
-                    {fragrance.name}
-                  </h4>
-                  {(fragrance.size_ml || fragrance.review_post_id) && (
-                    <div className="flex items-center gap-2 mt-1">
-                      {fragrance.size_ml && (
-                        <span className="text-xs text-primary/40">{fragrance.size_ml} ml</span>
-                      )}
-                      {fragrance.review_post_id && (
-                        <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">
-                          Reviewed
-                        </span>
-                      )}
+          <div className={`space-y-4${house.fragrances.length > 3 ? ' overflow-y-auto max-h-104 pr-1' : ''}`}>
+            {house.fragrances.map((fragrance) => (
+              <Link
+                key={fragrance.id}
+                href={`/fragrances/${fragrance.slug}`}
+                className="group block bg-white/50 hover:bg-tertiary/60 border border-secondary/10 hover:border-secondary/30 rounded-lg p-4 transition-all duration-300 card-shadow"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h4 className="font-display text-lg font-semibold text-primary group-hover:text-secondary transition-colors">
+                      {fragrance.name}
+                    </h4>
+                    {(fragrance.size_ml || fragrance.review_post_id) && (
+                      <div className="flex items-center gap-2 mt-1">
+                        {fragrance.size_ml && (
+                          <span className="text-xs text-primary/40">{fragrance.size_ml} ml</span>
+                        )}
+                        {fragrance.review_post_id && (
+                          <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">
+                            Reviewed
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {fragrance.description && (
+                      <p className="text-sm text-primary/50 mt-1 line-clamp-2">
+                        {fragrance.description}
+                      </p>
+                    )}
+                  </div>
+                  {fragrance.rating && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      <StarIcon className="w-4 h-4 text-secondary" filled />
+                      <span className="text-sm font-medium text-primary">{fragrance.rating}</span>
                     </div>
                   )}
-                  {fragrance.description && (
-                    <p className="text-sm text-primary/50 mt-1 line-clamp-2">
-                      {fragrance.description}
-                    </p>
-                  )}
                 </div>
-                {fragrance.rating && (
-                  <div className="flex items-center gap-1 shrink-0">
-                    <StarIcon className="w-4 h-4 text-secondary" filled />
-                    <span className="text-sm font-medium text-primary">{fragrance.rating}</span>
-                  </div>
-                )}
-              </div>
-              <span className="inline-flex items-center gap-1 text-xs text-secondary mt-3 group-hover:gap-2 transition-all">
-                View Fragrance
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </span>
-            </Link>
-          ))}
-          {house.fragrances.length > 3 && (
-            <p className="text-xs text-primary/40 text-center pt-2">
-              +{house.fragrances.length - 3} more fragrance{house.fragrances.length - 3 !== 1 ? 's' : ''}
-            </p>
-          )}
+                <span className="inline-flex items-center gap-1 text-xs text-secondary mt-3 group-hover:gap-2 transition-all">
+                  View Fragrance
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       ) : (
         <div className="bg-tertiary/30 rounded-lg p-8 text-center border border-dashed border-secondary/20">
