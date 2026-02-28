@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'Terms of use for Noseblind.',
 };
 
-const EFFECTIVE_DATE = 'February 26, 2026';
+const EFFECTIVE_DATE = 'February 28, 2026';
 
 export default function TermsPage() {
   return (
@@ -94,11 +94,31 @@ export default function TermsPage() {
         </p>
       </Section>
 
+      <Section title="EU/EEA Residents – GDPR">
+        <p>
+          Nothing in these Terms of Use limits or waives any rights you have under the General
+          Data Protection Regulation (GDPR) or other applicable EU/EEA data protection law. If
+          you are located in the European Union or European Economic Area, your data protection
+          rights — including rights of access, erasure, restriction, portability, and the right
+          to object — are governed by our{' '}
+          <a href="/privacy" className="text-secondary underline hover:text-primary transition-colors">
+            Privacy Policy
+          </a>{' '}
+          and applicable law, not by these Terms of Use.
+        </p>
+      </Section>
+
       <Section title="Governing Law">
         <p>
           These Terms of Use are governed by the laws of the State of California, without regard
           to its conflict of law provisions. Any disputes arising under these terms shall be
           subject to the jurisdiction of the courts located in California.
+        </p>
+        <p className="mt-4">
+          If you are located in the European Union or European Economic Area, you may also have
+          the right to seek remedies under the laws of your country of residence. These Terms do
+          not limit any mandatory consumer protection rights afforded to you by applicable EU/EEA
+          law.
         </p>
       </Section>
 
