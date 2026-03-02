@@ -11,8 +11,8 @@ function buildCSP(nonce: string): string {
     // unsafe-eval required in dev for React Fast Refresh; never present in production
     `script-src 'nonce-${nonce}' 'strict-dynamic' https://www.googletagmanager.com 'self'${isDev ? ` 'unsafe-eval'` : ''}`,
     // unsafe-inline needed for Next.js critical CSS and inline style= attributes
-    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
-    `font-src 'self' https://fonts.gstatic.com`,
+    `style-src 'self' 'unsafe-inline'`,
+    `font-src 'self'`,
     `img-src 'self'`,
     `connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://region1.google-analytics.com https://www.googletagmanager.com https://cm6xvdr4ja.execute-api.us-west-1.amazonaws.com`,
     `frame-src 'none'`,

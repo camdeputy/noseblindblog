@@ -1,9 +1,26 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { Cormorant_Garamond, Source_Sans_3 } from 'next/font/google';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import './globals.css';
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-garamond',
+  display: 'swap',
+});
+
+const sourceSans = Source_Sans_3({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-source-sans',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -21,11 +38,11 @@ export default async function RootLayout({
   const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${cormorant.variable} ${sourceSans.variable}`}>
       <body className="min-h-screen flex flex-col bg-white">
         <CookieConsentBanner nonce={nonce} />
         <Header />
-        <main className="flex-grow">{children}</main>
+        <main className="grow">{children}</main>
         <Footer />
       </body>
     </html>
