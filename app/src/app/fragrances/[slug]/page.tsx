@@ -288,9 +288,9 @@ export default async function FragrancePage({
                     <ExternalIcon className="w-3 h-3" />
                   </a>
                 )}
-                {safeUrl(fragrance.fragrance_houses?.house_url) && (
+                {safeUrl(fragrance.fragrance_houses?.house_url ?? null) && (
                   <a
-                    href={safeUrl(fragrance.fragrance_houses?.house_url)!}
+                    href={safeUrl(fragrance.fragrance_houses?.house_url ?? null)!}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-xs border border-secondary/30 text-secondary px-3 py-1.5 rounded-full hover:bg-secondary/10 transition-colors"
