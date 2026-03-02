@@ -43,7 +43,7 @@ export default function Header() {
                   transition-colors duration-200
                   ${isActive(item.href)
                     ? 'text-primary font-medium'
-                    : 'text-primary/50 hover:text-primary'
+                    : 'text-primary/75 hover:text-primary'
                   }
                 `}
               >
@@ -86,7 +86,7 @@ export default function Header() {
                   transition-colors duration-200
                   ${isActive(item.href)
                     ? 'text-primary font-medium'
-                    : 'text-primary/50'
+                    : 'text-primary/75'
                   }
                 `}
               >

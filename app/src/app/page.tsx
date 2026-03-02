@@ -41,7 +41,7 @@ export default async function HomePage() {
           </div>
 
           {/* ── Content ── */}
-          <p className="text-sm tracking-widest text-secondary mb-4 uppercase relative z-10">
+          <p className="text-sm tracking-widest text-primary/75 mb-4 uppercase relative z-10">
             Est. 2026 &middot; Fragrance Library
           </p>
           <h1 className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-semibold text-primary text-center leading-tight mb-6 relative z-10">
@@ -79,13 +79,13 @@ export default async function HomePage() {
             <h2 className="font-display text-3xl sm:text-4xl font-semibold text-primary mb-2">
               Let's get <span className="text-secondary">Anosmic</span>
             </h2>
-            <p className="text-primary/70 leading-relaxed mb-4">
+            <p className="text-primary/80 leading-relaxed mb-4">
               Noseblind is more than a fragrance blog; it is a digital journal primarily dedicated to 
               olfactory arts. I believe it is the most intimate form of expression, announcing our presence and 
               lingering in our absence. Join me on my fragrance journey as I sniff through and review my fragrance TBS (To Be Smelled). 
               Together we will discover new favorites, and overwhelm our senses (but on a real note, sniff responsibly). Let's get to smelling!
             </p>
-            <p className="text-primary/70 leading-relaxed mb-8">
+            <p className="text-primary/80 leading-relaxed mb-8">
               - Anosmic
             </p>
             <Link
@@ -128,7 +128,7 @@ export default async function HomePage() {
                   <span className="font-display text-6xl text-secondary/30">{i + 1}</span>
                 </div>
                 <div className="py-4 px-4">
-                  <div className="flex items-center gap-3 text-xs text-primary/60 mb-2">
+                  <div className="flex items-center gap-3 text-xs text-primary/75 mb-2">
                     <span className="uppercase tracking-wider font-medium">
                       {post.tags?.[0] || 'Journal'}
                     </span>
@@ -162,7 +162,7 @@ function PlaceholderCard({ category, date, title, index }: { category: string; d
         <span className="font-display text-6xl text-secondary/30">{index}</span>
       </div>
       <div className="py-4 px-4">
-        <div className="flex items-center gap-3 text-xs text-primary/60 mb-2">
+        <div className="flex items-center gap-3 text-xs text-primary/75 mb-2">
           <span className="uppercase tracking-wider font-medium">{category}</span>
           <span>&middot;</span>
           <span>{date}</span>
