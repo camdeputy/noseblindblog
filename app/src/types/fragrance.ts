@@ -1,7 +1,9 @@
 export interface FragranceHouse {
   id: string;
   name: string;
+  slug: string;
   description: string | null;
+  house_url: string | null;
   price: number | null;
   created_at: string;
   updated_at: string;
@@ -9,7 +11,9 @@ export interface FragranceHouse {
 
 export interface CreateHouseData {
   name: string;
+  slug?: string;
   description?: string;
+  house_url?: string;
   price?: number;
 }
 
@@ -36,7 +40,6 @@ export interface Fragrance {
   price_cents: number | null;
   currency: string | null;
   size_ml: number | null;
-  house_url: string | null;
   fragrance_url: string | null;
   review_post_id: string | null;
   created_at: string;
@@ -53,7 +56,6 @@ export interface CreateFragranceData {
   price_cents?: number;
   currency?: string;
   size_ml?: number;
-  house_url?: string;
   fragrance_url?: string;
   review_post_id?: string | null;
   notes?: NoteAssignment[];
@@ -61,7 +63,9 @@ export interface CreateFragranceData {
 
 export interface UpdateHouseData {
   name?: string;
+  slug?: string;
   description?: string;
+  house_url?: string;
 }
 
 export interface UpdateFragranceData {
@@ -73,7 +77,6 @@ export interface UpdateFragranceData {
   price_cents?: number;
   currency?: string;
   size_ml?: number;
-  house_url?: string;
   fragrance_url?: string;
   review_post_id?: string | null;
   notes?: NoteAssignment[];

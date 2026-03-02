@@ -18,7 +18,13 @@ interface HouseEditorProps {
 export default function HouseEditor({ mode = 'create', house, onSuccess, onCancel }: HouseEditorProps) {
   const isEdit = mode === 'edit';
   const [name, setName] = useState(house?.name ?? '');
+  const [slug, setSlug] = useState(house?.slug ?? '');
   const [description, setDescription] = useState(house?.description ?? '');
+  const [houseUrl, setHouseUrl] = useState(house?.house_url ?? '');
+
+  function toSlug(value: string) {
+    return value.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+  }
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
@@ -37,12 +43,16 @@ export default function HouseEditor({ mode = 'create', house, onSuccess, onCance
       if (isEdit && house) {
         await updateHouse(house.id, {
           name: name.trim(),
+          slug: slug.trim() || undefined,
           description: description.trim() || undefined,
+          house_url: houseUrl.trim() || undefined,
         });
       } else {
         await createHouse({
           name: name.trim(),
+          slug: slug.trim() || undefined,
           description: description.trim() || undefined,
+          house_url: houseUrl.trim() || undefined,
         });
       }
       onSuccess();
@@ -87,8 +97,20 @@ export default function HouseEditor({ mode = 'create', house, onSuccess, onCance
         <Input
           label="Brand Name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (!isEdit) setSlug(toSlug(e.target.value));
+          }}
           placeholder="e.g. Maison Francis Kurkdjian"
+          required
+          disabled={busy}
+        />
+
+        <Input
+          label="Slug"
+          value={slug}
+          onChange={(e) => setSlug(toSlug(e.target.value))}
+          placeholder="e.g. maison-francis-kurkdjian"
           required
           disabled={busy}
         />
@@ -98,6 +120,15 @@ export default function HouseEditor({ mode = 'create', house, onSuccess, onCance
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Brief description of the house..."
+          disabled={busy}
+        />
+
+        <Input
+          label="House URL"
+          type="url"
+          value={houseUrl}
+          onChange={(e) => setHouseUrl(e.target.value)}
+          placeholder="https://..."
           disabled={busy}
         />
       </div>

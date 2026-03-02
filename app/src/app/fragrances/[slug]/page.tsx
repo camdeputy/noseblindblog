@@ -36,12 +36,13 @@ type FragranceDetail = {
   price_cents: number | null;
   currency: string | null;
   size_ml: number | null;
-  house_url: string | null;
   fragrance_url: string | null;
   review_post_id: string | null;
   fragrance_houses: {
     name: string;
+    slug: string | null;
     description: string | null;
+    house_url: string | null;
   } | null;
 };
 
@@ -49,7 +50,7 @@ async function getFragranceBySlug(slug: string): Promise<FragranceDetail | null>
   const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from('fragrances')
-    .select('*, fragrance_houses(name, description)')
+    .select('*, fragrance_houses(name, slug, description, house_url)')
     .eq('slug', slug)
     .single();
 
@@ -176,9 +177,18 @@ export default async function FragrancePage({
             <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight tracking-tight">
               {fragrance.fragrance_houses?.name && (
                 <>
-                  <span className="italic font-normal text-secondary/75">
-                    {fragrance.fragrance_houses.name}
-                  </span>
+                  {fragrance.fragrance_houses.slug ? (
+                    <Link
+                      href={`/houses/${fragrance.fragrance_houses.slug}`}
+                      className="italic font-normal text-secondary/75 hover:text-secondary transition-colors"
+                    >
+                      {fragrance.fragrance_houses.name}
+                    </Link>
+                  ) : (
+                    <span className="italic font-normal text-secondary/75">
+                      {fragrance.fragrance_houses.name}
+                    </span>
+                  )}
                   <span className="text-secondary/30 font-light mx-3 not-italic">·</span>
                 </>
               )}
@@ -278,9 +288,9 @@ export default async function FragrancePage({
                     <ExternalIcon className="w-3 h-3" />
                   </a>
                 )}
-                {safeUrl(fragrance.house_url) && (
+                {safeUrl(fragrance.fragrance_houses?.house_url) && (
                   <a
-                    href={safeUrl(fragrance.house_url)!}
+                    href={safeUrl(fragrance.fragrance_houses?.house_url)!}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-xs border border-secondary/30 text-secondary px-3 py-1.5 rounded-full hover:bg-secondary/10 transition-colors"
@@ -309,9 +319,18 @@ export default async function FragrancePage({
             {fragrance.fragrance_houses && (
               <div>
                 <SectionLabel>Fragrance House</SectionLabel>
-                <p className="font-display text-lg font-semibold text-primary mb-1">
-                  {fragrance.fragrance_houses.name}
-                </p>
+                {fragrance.fragrance_houses.slug ? (
+                  <Link
+                    href={`/houses/${fragrance.fragrance_houses.slug}`}
+                    className="font-display text-lg font-semibold text-primary hover:text-secondary transition-colors mb-1 inline-block"
+                  >
+                    {fragrance.fragrance_houses.name}
+                  </Link>
+                ) : (
+                  <p className="font-display text-lg font-semibold text-primary mb-1">
+                    {fragrance.fragrance_houses.name}
+                  </p>
+                )}
                 {fragrance.fragrance_houses.description && (
                   <p className="text-sm text-primary/60 leading-relaxed">
                     {fragrance.fragrance_houses.description}

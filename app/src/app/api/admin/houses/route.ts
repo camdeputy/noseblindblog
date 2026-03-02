@@ -19,7 +19,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const supabase = createAdminSupabase();
 
-  let body: { name: string; description?: string; price?: number };
+  let body: { name: string; slug?: string; description?: string; house_url?: string; price?: number };
   try {
     body = await request.json();
   } catch {
@@ -30,11 +30,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Name is required" }, { status: 400 });
   }
 
+  const slug = body.slug?.trim() ||
+    body.name.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+
   const { data, error } = await supabase
     .from("fragrance_houses")
     .insert({
       name: body.name.trim(),
+      slug,
       description: body.description?.trim() || null,
+      house_url: body.house_url?.trim() || null,
       price: body.price ?? null,
     })
     .select()

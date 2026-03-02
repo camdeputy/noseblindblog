@@ -29,7 +29,6 @@ export async function POST(request: Request) {
     price_cents?: number;
     currency?: string;
     size_ml?: number;
-    house_url?: string;
     fragrance_url?: string;
     review_post_id?: string | null;
     notes?: NoteAssignment[];
@@ -63,7 +62,6 @@ export async function POST(request: Request) {
       price_cents: body.price_cents ?? null,
       currency: body.currency?.trim() || null,
       size_ml: body.size_ml ?? null,
-      house_url: body.house_url?.trim() || null,
       fragrance_url: body.fragrance_url?.trim() || null,
       review_post_id: body.review_post_id || null,
     })

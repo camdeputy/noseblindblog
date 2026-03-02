@@ -8,6 +8,7 @@ import Link from 'next/link';
 export type FragranceHouse = {
   id: string;
   name: string;
+  slug?: string | null;
   description: string | null;
   rating: number | null;
   logo_url?: string | null;
@@ -263,7 +264,13 @@ function HouseRow({ house, isReversed, index }: HouseRowProps) {
       </div>
 
       <h2 className="font-display text-2xl md:text-3xl font-semibold text-primary mb-2">
-        {house.name}
+        {house.slug ? (
+          <Link href={`/houses/${house.slug}`} className="hover:text-secondary transition-colors">
+            {house.name}
+          </Link>
+        ) : (
+          house.name
+        )}
       </h2>
 
       {house.rating && (

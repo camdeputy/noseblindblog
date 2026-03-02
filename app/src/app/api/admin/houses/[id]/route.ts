@@ -8,7 +8,7 @@ export async function PUT(
   const { id } = await params;
   const supabase = createAdminSupabase();
 
-  let body: { name?: string; description?: string };
+  let body: { name?: string; slug?: string; description?: string; house_url?: string };
   try {
     body = await request.json();
   } catch {
@@ -21,7 +21,9 @@ export async function PUT(
 
   const updates: Record<string, unknown> = {};
   if (body.name !== undefined) updates.name = body.name.trim();
+  if (body.slug !== undefined) updates.slug = body.slug.trim();
   if (body.description !== undefined) updates.description = body.description.trim() || null;
+  if (body.house_url !== undefined) updates.house_url = body.house_url.trim() || null;
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ ok: false, error: "No fields to update" }, { status: 400 });

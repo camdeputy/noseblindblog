@@ -35,7 +35,6 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
   const [priceCents, setPriceCents] = useState(fragrance?.price_cents != null ? String(fragrance.price_cents) : '');
   const [currency, setCurrency] = useState(fragrance?.currency ?? 'USD');
   const [sizeMl, setSizeMl] = useState(fragrance?.size_ml != null ? String(fragrance.size_ml) : '');
-  const [houseUrl, setHouseUrl] = useState(fragrance?.house_url ?? '');
   const [fragranceUrl, setFragranceUrl] = useState(fragrance?.fragrance_url ?? '');
   const [reviewPostId, setReviewPostId] = useState(fragrance?.review_post_id ?? '');
   const [notes, setNotes] = useState<NoteAssignment[]>([]);
@@ -123,7 +122,6 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
         price_cents: priceNum,
         currency: currency.trim() || undefined,
         size_ml: sizeMlNum,
-        house_url: houseUrl.trim() || undefined,
         fragrance_url: fragranceUrl.trim() || undefined,
         review_post_id: reviewPostId || null,
         notes: notes.length > 0 ? notes : undefined,
@@ -272,25 +270,14 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
         </div>
 
         {/* URLs row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="House URL"
-            type="url"
-            value={houseUrl}
-            onChange={(e) => setHouseUrl(e.target.value)}
-            placeholder="https://..."
-            disabled={busy}
-          />
-
-          <Input
-            label="Fragrance URL"
-            type="url"
-            value={fragranceUrl}
-            onChange={(e) => setFragranceUrl(e.target.value)}
-            placeholder="https://..."
-            disabled={busy}
-          />
-        </div>
+        <Input
+          label="Fragrance URL"
+          type="url"
+          value={fragranceUrl}
+          onChange={(e) => setFragranceUrl(e.target.value)}
+          placeholder="https://..."
+          disabled={busy}
+        />
 
         {/* Review Post */}
         <Select
