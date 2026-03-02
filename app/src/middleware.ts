@@ -13,12 +13,13 @@ function buildCSP(nonce: string): string {
     // unsafe-inline needed for Next.js critical CSS and inline style= attributes
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `font-src 'self' https://fonts.gstatic.com`,
-    `img-src 'self' https: data: blob:`,
+    `img-src 'self'`,
     `connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://region1.google-analytics.com https://www.googletagmanager.com https://cm6xvdr4ja.execute-api.us-west-1.amazonaws.com`,
     `frame-src 'none'`,
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,
+    `frame-ancestors 'none'`,
     `upgrade-insecure-requests`,
   ].join('; ');
 }
