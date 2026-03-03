@@ -36,7 +36,8 @@ export class ApiStack extends cdk.Stack {
             memorySize: 128,
             timeout: cdk.Duration.seconds(5),
             environment: {
-                VERCEL_PROJECT_NAME: "noseblindblog"
+                VERCEL_PROJECT_NAME: "noseblindblog",
+                VERCEL_TEAM_SLUG: "camdeputy"
             }
         });
 

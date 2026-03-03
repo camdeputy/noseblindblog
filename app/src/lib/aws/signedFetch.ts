@@ -1,21 +1,12 @@
+import { getVercelOidcToken } from '@vercel/oidc';
+
 /**
  * Drop-in replacement for fetch() that authenticates requests to API Gateway.
- *
- * In Vercel: sends the OIDC token as `Authorization: Bearer <token>`.
- *   The Lambda authorizer validates the JWT against Vercel's JWKS endpoint.
- *
- * Locally: falls back to `Authorization: Bearer <ADMIN_API_KEY>`, which the
- *   Lambda authorizer accepts as a static-key fallback for development.
+ * Uses Vercel's OIDC token, validated by the Lambda authorizer against
+ * Vercel's JWKS endpoint. Only works when running on Vercel (use `vercel dev` locally).
  */
 export async function signedFetch(url: string, init: RequestInit = {}): Promise<Response> {
-  const token = process.env.VERCEL_OIDC_TOKEN;
-
-  if (!token) {
-    throw new Error(
-      'VERCEL_OIDC_TOKEN is not set. Admin routes require a Vercel OIDC token. ' +
-      'Run `vercel dev` locally instead of `next dev` to have the token injected.',
-    );
-  }
+  const token = await getVercelOidcToken();
 
   return fetch(url, {
     ...init,
