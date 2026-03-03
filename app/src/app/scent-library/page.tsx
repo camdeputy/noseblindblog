@@ -6,38 +6,46 @@ import ScentLibraryClient, {
 
 export const revalidate = 300;
 
+const PAGE_SIZE = 8;
+
 export default async function ScentLibraryPage() {
   const supabase = createServerSupabase();
 
-  // Parallel fetch — eliminates the sequential waterfall from the old client component.
-  // Use select('*') to avoid failures from any column-name mismatch with the live schema.
-  const [{ data: housesData, error: housesError }, { data: fragrancesData, error: fragrancesError }] = await Promise.all([
-    supabase
-      .from('fragrance_houses')
-      .select('*')
-      .order('name', { ascending: true }),
-    supabase
-      .from('fragrances')
-      .select('*')
-      .order('created_at', { ascending: false }),
+  // Three parallel fetches:
+  // 1. All house names/ids — lightweight, needed for alphabet filter letters
+  // 2. First page of full house data — what renders immediately
+  // 3. 5 most recent fragrances — for the "recently added" view
+  const [
+    { data: allHousesData },
+    { data: firstPageHouses, count },
+    { data: recentFragData },
+  ] = await Promise.all([
+    supabase.from('fragrance_houses').select('id, name').order('name'),
+    supabase.from('fragrance_houses').select('*', { count: 'exact' }).order('name').range(0, PAGE_SIZE - 1),
+    supabase.from('fragrances').select('*').order('created_at', { ascending: false }).limit(5),
   ]);
 
-  if (housesError) console.error('[scent-library] houses fetch error:', housesError.message);
-  if (fragrancesError) console.error('[scent-library] fragrances fetch error:', fragrancesError.message);
+  const allHouses = allHousesData ?? [];
+  const houses = firstPageHouses ?? [];
+  const total = count ?? 0;
 
-  const houses = housesData ?? [];
+  // Fetch fragrances only for the first-page houses (sequential, depends on house IDs above)
+  const houseIds = houses.map((h) => h.id);
+  const { data: fragrancesData } = houseIds.length > 0
+    ? await supabase.from('fragrances').select('*').in('house_id', houseIds).order('created_at', { ascending: false })
+    : { data: [] };
+
   const fragrances = fragrancesData ?? [];
 
-  // Available alphabet letters derived from house names
+  // Available letters derived from ALL houses, not just the first page
   const availableLetters = [
     ...new Set(
-      houses
+      allHouses
         .map((h) => h.name.charAt(0).toUpperCase())
         .filter((l) => /[A-Z]/.test(l))
     ),
   ];
 
-  // Group fragrances by house_id in one pass
   const byHouse = new Map<string, typeof fragrances>();
   for (const f of fragrances) {
     const arr = byHouse.get(f.house_id) ?? [];
@@ -45,20 +53,21 @@ export default async function ScentLibraryPage() {
     byHouse.set(f.house_id, arr);
   }
 
-  const housesWithFragrances: HouseWithFragrances[] = houses.map((h) => ({
+  const initialHouses: HouseWithFragrances[] = houses.map((h) => ({
     ...h,
     fragrances: byHouse.get(h.id) ?? [],
   }));
 
-  // Pre-compute the 5 most recently added fragrances (already sorted desc)
-  const houseNameById = new Map(houses.map((h) => [h.id, h.name]));
-  const recentFragrances: FragranceWithHouseName[] = fragrances
-    .slice(0, 5)
-    .map((f) => ({ ...f, houseName: houseNameById.get(f.house_id) ?? '' }));
+  const houseNameById = new Map(allHouses.map((h) => [h.id, h.name]));
+  const recentFragrances: FragranceWithHouseName[] = (recentFragData ?? []).map((f) => ({
+    ...f,
+    houseName: houseNameById.get(f.house_id) ?? '',
+  }));
 
   return (
     <ScentLibraryClient
-      houses={housesWithFragrances}
+      initialHouses={initialHouses}
+      hasMore={total > PAGE_SIZE}
       recentFragrances={recentFragrances}
       availableLetters={availableLetters}
     />

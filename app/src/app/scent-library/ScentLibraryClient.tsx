@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 
 // ── Types (exported so page.tsx can reuse them) ──────────────────────────────
@@ -33,7 +33,8 @@ export type FragranceWithHouseName = Fragrance & { houseName: string };
 // ── Props ────────────────────────────────────────────────────────────────────
 
 interface Props {
-  houses: HouseWithFragrances[];
+  initialHouses: HouseWithFragrances[];
+  hasMore: boolean;
   recentFragrances: FragranceWithHouseName[];
   availableLetters: string[];
 }
@@ -44,9 +45,48 @@ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 // ── Main component ───────────────────────────────────────────────────────────
 
-export default function ScentLibraryClient({ houses, recentFragrances, availableLetters }: Props) {
+export default function ScentLibraryClient({ initialHouses, hasMore: initialHasMore, recentFragrances, availableLetters }: Props) {
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Infinite scroll state
+  const [houses, setHouses] = useState<HouseWithFragrances[]>(initialHouses);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const [page, setPage] = useState(1);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const fetchMore = useCallback(async () => {
+    if (isFetchingMore || !hasMore) return;
+    setIsFetchingMore(true);
+    try {
+      const res = await fetch(`/api/scent-library?page=${page + 1}`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+      setHouses((prev) => [...prev, ...data.houses]);
+      setHasMore(data.hasMore);
+      setPage((p) => p + 1);
+    } catch (err) {
+      console.error('[scent-library] infinite scroll fetch error:', err);
+    } finally {
+      setIsFetchingMore(false);
+    }
+  }, [isFetchingMore, hasMore, page]);
+
+  // Keep a stable ref so the observer callback always calls the latest fetchMore
+  const fetchMoreRef = useRef(fetchMore);
+  fetchMoreRef.current = fetchMore;
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) fetchMoreRef.current(); },
+      { rootMargin: '300px' },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
 
   const availableLetterSet = useMemo(() => new Set(availableLetters), [availableLetters]);
 
@@ -233,6 +273,16 @@ export default function ScentLibraryClient({ houses, recentFragrances, available
                 <HouseRow key={house.id} house={house} isReversed={index % 2 === 1} index={index} />
               ))}
             </div>
+
+            {/* Inline skeleton while fetching next page */}
+            {isFetchingMore && (
+              <div className="space-y-16 mt-16">
+                <InlineHouseRowSkeleton isReversed={filteredHouses.length % 2 === 1} />
+              </div>
+            )}
+
+            {/* Sentinel — always mounted when hasMore so scroll triggers load in any view */}
+            {hasMore && <div ref={sentinelRef} className="h-2" aria-hidden="true" />}
           </>
         )}
       </section>
@@ -434,6 +484,49 @@ function FragranceCard({ fragrance }: { fragrance: FragranceWithHouseName }) {
         </svg>
       </span>
     </Link>
+  );
+}
+
+// ── Inline loading skeleton (used while fetching next page) ──────────────────
+
+function InlineHouseRowSkeleton({ isReversed }: { isReversed: boolean }) {
+  const brandSkeleton = (
+    <div className="flex flex-col items-center md:items-start">
+      <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-tertiary/60 animate-pulse mb-6" />
+      <div className="h-8 w-44 bg-tertiary/60 rounded animate-pulse mb-3" />
+      <div className="h-4 w-56 bg-tertiary/40 rounded animate-pulse mb-2" />
+      <div className="h-3 w-24 bg-tertiary/30 rounded animate-pulse mt-1" />
+    </div>
+  );
+
+  const fragrancesSkeleton = (
+    <div className="flex-1">
+      <div className="h-6 w-32 bg-tertiary/40 rounded animate-pulse mb-4" />
+      <div className="space-y-4">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="bg-white/50 border border-secondary/10 rounded-lg p-4">
+            <div className="h-5 w-40 bg-tertiary/60 rounded animate-pulse mb-2" />
+            <div className="h-4 w-64 bg-tertiary/30 rounded animate-pulse" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-start py-8 border-b border-secondary/10">
+      {isReversed ? (
+        <>
+          <div className="order-2 md:order-1">{fragrancesSkeleton}</div>
+          <div className="order-1 md:order-2 flex justify-center md:justify-end">{brandSkeleton}</div>
+        </>
+      ) : (
+        <>
+          <div className="flex justify-center md:justify-start">{brandSkeleton}</div>
+          <div>{fragrancesSkeleton}</div>
+        </>
+      )}
+    </div>
   );
 }
 
