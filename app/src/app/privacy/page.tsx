@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'Privacy policy for Noseblind.',
 };
 
-const EFFECTIVE_DATE = 'February 28, 2026';
+const EFFECTIVE_DATE = 'March 2, 2026';
 
 export default function PrivacyPage() {
   return (
@@ -54,6 +54,12 @@ export default function PrivacyPage() {
         <p className="mt-4">
           This data is aggregated and used solely to understand how visitors interact with the site
           (e.g., which pages are most read). We do not use it to identify individual people.
+        </p>
+        <p className="mt-4">
+          For security purposes, your IP address is temporarily processed when you submit a request
+          to our login endpoint. This is used solely to enforce rate limiting and protect the site
+          against automated login attempts. Your IP address is not linked to any browsing activity
+          or content you view on the Site.
         </p>
       </Section>
 
@@ -158,6 +164,25 @@ export default function PrivacyPage() {
               className="text-secondary underline hover:text-primary transition-colors"
             >
               emailjs.com/legal/privacy-policy
+            </a>
+            .
+          </li>
+          <li>
+            <strong>Upstash, Inc.</strong> — provides a serverless Redis database used exclusively
+            for rate limiting on our login endpoint. When a login attempt is made, your IP address
+            is transmitted to Upstash and stored for up to 15 minutes to enforce request limits.
+            No other personal data is sent to Upstash, and this data is never linked to your
+            browsing activity on the Site. Upstash is headquartered in the United States; for
+            transfers from the EU/EEA, Upstash relies on Standard Contractual Clauses as an
+            approved transfer mechanism under GDPR Article 46. Their privacy policy is available
+            at{' '}
+            <a
+              href="https://upstash.com/static/trust/privacy.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-secondary underline hover:text-primary transition-colors"
+            >
+              upstash.com/trust/privacy
             </a>
             .
           </li>
@@ -294,6 +319,10 @@ export default function PrivacyPage() {
           Contact form messages are received directly in our inbox and are retained only as long
           as reasonably necessary to respond to your inquiry. We do not store them in any separate
           database.
+        </p>
+        <p className="mt-4">
+          IP addresses processed for rate limiting purposes are retained for a maximum of 15
+          minutes, after which they are automatically deleted by Upstash.
         </p>
       </Section>
 
