@@ -3,6 +3,59 @@ import type { NextRequest } from 'next/server';
 
 const SESSION_COOKIE_NAME = 'admin_session';
 
+function hexToUint8Array(hex: string): Uint8Array<ArrayBuffer> {
+  if (hex.length % 2 !== 0) return new Uint8Array(new ArrayBuffer(0));
+  const buf = new ArrayBuffer(hex.length / 2);
+  const arr = new Uint8Array(buf);
+  for (let i = 0; i < hex.length; i += 2) {
+    arr[i / 2] = parseInt(hex.slice(i, i + 2), 16);
+  }
+  return arr;
+}
+
+async function verifySessionToken(
+  token: string,
+  secret: string,
+): Promise<{ valid: boolean; session?: { exp: number } }> {
+  const dotIndex = token.lastIndexOf('.');
+  if (dotIndex === -1) return { valid: false };
+
+  const payloadB64 = token.slice(0, dotIndex);
+  const sig = token.slice(dotIndex + 1);
+
+  if (!payloadB64 || !sig) return { valid: false };
+
+  const encoder = new TextEncoder();
+  let key: CryptoKey;
+  try {
+    key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify'],
+    );
+  } catch {
+    return { valid: false };
+  }
+
+  const valid = await crypto.subtle.verify(
+    'HMAC',
+    key,
+    hexToUint8Array(sig),
+    encoder.encode(payloadB64),
+  );
+
+  if (!valid) return { valid: false };
+
+  try {
+    const session = JSON.parse(Buffer.from(payloadB64, 'base64').toString());
+    return { valid: true, session };
+  } catch {
+    return { valid: false };
+  }
+}
+
 function buildCSP(nonce: string): string {
   const isDev = process.env.NODE_ENV === 'development';
 
@@ -53,7 +106,7 @@ function applySecurityHeaders(
   return response;
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const csp = buildCSP(nonce);
 
@@ -63,19 +116,15 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
     if (pathname !== '/admin/login' && pathname !== '/api/admin/auth') {
       const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
+      const sessionSecret = process.env.SESSION_SECRET;
 
-      if (!sessionCookie?.value) {
+      if (!sessionCookie?.value || !sessionSecret) {
         return applySecurityHeaders(redirectToLogin(request), csp, pathname);
       }
 
-      try {
-        const session = JSON.parse(Buffer.from(sessionCookie.value, 'base64').toString());
-        if (!session.exp || session.exp < Date.now()) {
-          const response = redirectToLogin(request);
-          response.cookies.delete(SESSION_COOKIE_NAME);
-          return applySecurityHeaders(response, csp, pathname);
-        }
-      } catch {
+      const { valid, session } = await verifySessionToken(sessionCookie.value, sessionSecret);
+
+      if (!valid || !session?.exp || session.exp < Date.now()) {
         const response = redirectToLogin(request);
         response.cookies.delete(SESSION_COOKIE_NAME);
         return applySecurityHeaders(response, csp, pathname);
