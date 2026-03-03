@@ -28,13 +28,7 @@ export class ApiStack extends cdk.Stack {
         }
         const contentBucket = s3.Bucket.fromBucketName(this, "noseblindblog-content", contentBucketName);
 
-        // Admin API key passed as context parameter
-        const adminApiKey = this.node.tryGetContext("adminApiKey") as string;
-        if (!adminApiKey) {
-            throw new Error("Missing context value: adminApiKey (pass -c adminApiKey=YOUR_KEY)");
-        }
-
-        // Admin API key authorizer
+        // Lambda authorizer: validates Vercel OIDC JWTs issued for this project.
         const authorizerFn = new lambdaNodejs.NodejsFunction(this, "AuthorizerFn", {
             runtime: lambda.Runtime.NODEJS_20_X,
             entry: "../api/src/handlers/authorizer.ts",
@@ -42,7 +36,7 @@ export class ApiStack extends cdk.Stack {
             memorySize: 128,
             timeout: cdk.Duration.seconds(5),
             environment: {
-                ADMIN_API_KEY: adminApiKey
+                VERCEL_PROJECT_NAME: "noseblindblog"
             }
         });
 
@@ -51,7 +45,7 @@ export class ApiStack extends cdk.Stack {
             authorizerFn,
             {
                 responseTypes: [authorizers.HttpLambdaResponseType.SIMPLE],
-                identitySource: ["$request.header.x-api-key"]
+                identitySource: ["$request.header.Authorization"]
             }
         );
 
@@ -66,7 +60,7 @@ export class ApiStack extends cdk.Stack {
                     apigwv2.CorsHttpMethod.DELETE,
                     apigwv2.CorsHttpMethod.OPTIONS
                 ],
-                allowHeaders: ["Content-Type", "Authorization", "x-api-key"],
+                allowHeaders: ["Content-Type", "Authorization"],
                 maxAge: cdk.Duration.days(1)
             }
         });
