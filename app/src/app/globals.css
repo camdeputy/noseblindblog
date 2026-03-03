@@ -190,6 +190,22 @@ body {
   box-shadow: inset 0 -16px 24px rgba(81, 45, 56, 0.025);
 }
 
+/* Mobile nav menu entrance */
+@keyframes menuSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-slide-down {
+  animation: menuSlideDown 0.18s ease-out forwards;
+}
+
 /* Post card animations */
 @keyframes fadeInUp {
   from {
