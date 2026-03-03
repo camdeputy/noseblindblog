@@ -37,7 +37,8 @@ export class ApiStack extends cdk.Stack {
             timeout: cdk.Duration.seconds(5),
             environment: {
                 VERCEL_PROJECT_NAME: "noseblindblog",
-                VERCEL_TEAM_SLUG: "camdeputy"
+                VERCEL_TEAM_SLUG: "camerons-projects-2a68c67f",
+                VERCEL_OIDC_ISSUER: "https://oidc.vercel.com/camerons-projects-2a68c67f"
             }
         });
 
