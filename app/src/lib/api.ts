@@ -25,7 +25,7 @@ export async function getPosts(): Promise<Post[]> {
     throw new Error(data.error || 'Failed to fetch posts');
   }
 
-  return data.items || [];
+  return (data.items || []).map((item) => ({ ...item, tags: item.tags ?? [] }));
 }
 
 export async function getPostBySlug(slug: string): Promise<PostWithContent> {
@@ -47,6 +47,7 @@ export async function getPostBySlug(slug: string): Promise<PostWithContent> {
 
   return {
     ...data.item,
+    tags: data.item.tags ?? [],
     content: data.content ?? null,
   };
 }
