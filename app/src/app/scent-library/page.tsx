@@ -1,10 +1,28 @@
+import type { Metadata } from 'next';
 import { createServerSupabase } from '@/lib/supabase/server';
 import ScentLibraryClient, {
   type HouseWithFragrances,
   type FragranceWithHouseName,
 } from './ScentLibraryClient';
+import { siteUrl } from '@/lib/siteConfig';
 
 export const revalidate = 300;
+
+export const metadata: Metadata = {
+  title: 'Scent Library',
+  description: 'Browse fragrances by house, notes, and ratings. Discover new scents in our curated fragrance catalog.',
+  alternates: { canonical: `${siteUrl}/scent-library` },
+  openGraph: {
+    title: 'Scent Library | Noseblind',
+    description: 'Browse fragrances by house, notes, and ratings. Discover new scents in our curated fragrance catalog.',
+    url: `${siteUrl}/scent-library`,
+    type: 'website',
+  },
+  twitter: {
+    title: 'Scent Library | Noseblind',
+    description: 'Browse fragrances by house, notes, and ratings. Discover new scents in our curated fragrance catalog.',
+  },
+};
 
 const PAGE_SIZE = 8;
 

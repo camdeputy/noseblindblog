@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 import { getPostBySlug, getPosts } from '@/lib/api';
 import PostContent from '@/components/PostContent';
 import Badge from '@/components/ui/Badge';
+import { siteUrl, siteName } from '@/lib/siteConfig';
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -31,9 +32,27 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
   try {
     const post = await getPostBySlug(slug);
+    const url = `${siteUrl}/posts/${slug}`;
+    const publishedAt = post.publishedAt
+      ? (typeof post.publishedAt === 'number' ? new Date(post.publishedAt).toISOString() : post.publishedAt)
+      : undefined;
+
     return {
       title: post.title,
       description: post.summary,
+      alternates: { canonical: url },
+      openGraph: {
+        title: post.title,
+        description: post.summary,
+        url,
+        type: 'article',
+        ...(publishedAt && { publishedTime: publishedAt }),
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: post.title,
+        description: post.summary,
+      },
     };
   } catch {
     return {
@@ -65,9 +84,26 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const displayDate = post.publishedAt || post.createdAt;
   const readingTime = post.content ? estimateReadingTime(post.content) : 0;
+  const isoDate =
+    typeof displayDate === 'number' ? new Date(displayDate).toISOString() : displayDate;
+
+  const blogPostingSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.summary,
+    datePublished: isoDate,
+    url: `${siteUrl}/posts/${slug}`,
+    author: { '@type': 'Person', name: 'Anosmic', url: `${siteUrl}/about` },
+    publisher: { '@type': 'Organization', name: siteName, url: siteUrl },
+  };
 
   return (
     <article className="max-w-3xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }}
+      />
       <Link
         href="/"
         className="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors mb-8"

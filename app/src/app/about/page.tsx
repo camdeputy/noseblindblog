@@ -1,10 +1,22 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { siteUrl } from '@/lib/siteConfig';
 
 export const metadata: Metadata = {
   title: 'About',
-  description: 'The nose behind Noseblind — a fragrance blog and catalog.',
+  description: 'Noseblind, a fragrance review blog and scent library based in the San Francisco Bay Area.',
+  alternates: { canonical: `${siteUrl}/about` },
+  openGraph: {
+    title: 'About | Noseblind',
+    description: 'Noseblind, a fragrance review blog and scent library based in the San Francisco Bay Area.',
+    url: `${siteUrl}/about`,
+    type: 'website',
+  },
+  twitter: {
+    title: 'About | Noseblind',
+    description: 'Noseblind, a fragrance review blog and scent library based in the San Francisco Bay Area.',
+  },
 };
 
 const FAVORITE_NOTES = [

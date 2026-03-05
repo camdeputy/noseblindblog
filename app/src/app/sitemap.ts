@@ -13,9 +13,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const supabase = createServerSupabase();
-  const [postsResult, fragrancesResult] = await Promise.allSettled([
+  const [postsResult, fragrancesResult, housesResult] = await Promise.allSettled([
     getPosts(),
     supabase.from('fragrances').select('slug, updated_at').order('name', { ascending: true }),
+    supabase.from('fragrance_houses').select('slug, updated_at').order('name', { ascending: true }),
   ]);
 
   const postRoutes: MetadataRoute.Sitemap =
@@ -40,5 +41,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           }))
       : [];
 
-  return [...staticRoutes, ...postRoutes, ...fragranceRoutes];
+  const houseRoutes: MetadataRoute.Sitemap =
+    housesResult.status === 'fulfilled'
+      ? (housesResult.value.data ?? [])
+          .filter((h) => h.slug)
+          .map((h) => ({
+            url: `${baseUrl}/houses/${h.slug}`,
+            lastModified: h.updated_at ? new Date(h.updated_at) : undefined,
+            priority: 0.65,
+            changeFrequency: 'monthly' as const,
+          }))
+      : [];
+
+  return [...staticRoutes, ...postRoutes, ...fragranceRoutes, ...houseRoutes];
 }

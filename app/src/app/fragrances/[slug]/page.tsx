@@ -1,10 +1,59 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { getPosts } from '@/lib/api';
+import { siteUrl } from '@/lib/siteConfig';
 
 // Cache each fragrance page for 5 minutes; rebuild on next request after expiry
 export const revalidate = 300;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const fragrance = await getFragranceBySlug(slug);
+  if (!fragrance) return { title: 'Fragrance Not Found' };
+
+  const supabase = createServerSupabase();
+  const { data: img } = await supabase
+    .from('fragrance_images')
+    .select('url, alt_text')
+    .eq('fragrance_id', fragrance.id)
+    .order('sort_order', { ascending: true })
+    .limit(1)
+    .single();
+
+  const title = fragrance.fragrance_houses?.name
+    ? `${fragrance.name} — ${fragrance.fragrance_houses.name}`
+    : fragrance.name;
+  const description =
+    fragrance.description?.slice(0, 155) ??
+    `Explore ${fragrance.name}${fragrance.fragrance_houses?.name ? ` by ${fragrance.fragrance_houses.name}` : ''} on Noseblind.`;
+  const url = `${siteUrl}/fragrances/${slug}`;
+  const images = img ? [{ url: img.url, alt: img.alt_text ?? fragrance.name }] : [];
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+      ...(images.length > 0 && { images }),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      ...(images.length > 0 && { images: [images[0].url] }),
+    },
+  };
+}
 
 // Pre-build all known fragrance slugs at deploy time for instant first loads
 export async function generateStaticParams() {
@@ -145,8 +194,32 @@ export default async function FragrancePage({
 
   const hasNotes = notes.length > 0;
 
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: fragrance.name,
+    ...(fragrance.description && { description: fragrance.description }),
+    ...(fragrance.fragrance_houses?.name && {
+      brand: { '@type': 'Brand', name: fragrance.fragrance_houses.name },
+    }),
+    ...(fragrance.rating != null && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: fragrance.rating,
+        bestRating: 5,
+        reviewCount: 1,
+      },
+    }),
+    ...(primaryImage && { image: primaryImage.url }),
+    url: `${siteUrl}/fragrances/${fragrance.slug}`,
+  };
+
   return (
     <div className="min-h-screen bg-tertiary/30">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
       {/* Hero */}
       <section className="relative overflow-hidden">
         {/* Radial depth gradient */}
@@ -250,7 +323,7 @@ export default async function FragrancePage({
               <div className="flex gap-3 overflow-x-auto pb-1">
                 {images.slice(1).map((img, i) => (
                   <div key={i} className="w-20 h-20 shrink-0 rounded-lg overflow-hidden border border-secondary/10">
-                    <img src={img.url} alt={img.alt_text ?? ''} className="w-full h-full object-cover" />
+                    <img src={img.url} alt={img.alt_text ?? fragrance.name} className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>

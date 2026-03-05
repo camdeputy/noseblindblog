@@ -6,6 +6,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
+import { siteName, siteDescription, siteUrl } from '@/lib/siteConfig';
 import './globals.css';
 
 const cormorant = Cormorant_Garamond({
@@ -26,10 +27,19 @@ const sourceSans = Source_Sans_3({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Noseblind Blog',
-    template: '%s | Noseblind Blog',
+    default: siteName,
+    template: `%s | ${siteName}`,
   },
-  description: 'A modern blog about things that matter.',
+  description: siteDescription,
+  metadataBase: new URL(siteUrl),
+  openGraph: {
+    siteName,
+    type: 'website',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 };
 
 export default async function RootLayout({

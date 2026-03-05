@@ -5,9 +5,22 @@ import { Post } from '@/types/post';
 
 export const revalidate = 300;
 
+import { siteUrl } from '@/lib/siteConfig';
+
 export const metadata: Metadata = {
-  title: 'Posts',
-  description: 'Explore our latest articles and stories',
+  title: 'The Journal',
+  description: 'Fragrance reviews, scent science, and editorial discoveries from Noseblind.',
+  alternates: { canonical: `${siteUrl}/posts` },
+  openGraph: {
+    title: 'The Journal | Noseblind',
+    description: 'Fragrance reviews, scent science, and editorial discoveries from Noseblind.',
+    url: `${siteUrl}/posts`,
+    type: 'website',
+  },
+  twitter: {
+    title: 'The Journal | Noseblind',
+    description: 'Fragrance reviews, scent science, and editorial discoveries from Noseblind.',
+  },
 };
 
 function formatDate(date: string | number): string {

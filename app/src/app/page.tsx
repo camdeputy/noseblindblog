@@ -1,7 +1,25 @@
+import type { Metadata } from 'next';
 import { getPosts } from '@/lib/api';
 import { Post } from '@/types/post';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { siteUrl, siteName, siteDescription } from '@/lib/siteConfig';
+
+export const metadata: Metadata = {
+  title: { absolute: `${siteName} — Fragrance Reviews & Scent Library` },
+  description: siteDescription,
+  alternates: { canonical: siteUrl },
+  openGraph: {
+    title: `${siteName} — Fragrance Reviews & Scent Library`,
+    description: siteDescription,
+    url: siteUrl,
+    type: 'website',
+  },
+  twitter: {
+    title: `${siteName} — Fragrance Reviews & Scent Library`,
+    description: siteDescription,
+  },
+};
 
 export const revalidate = 300;
 
@@ -17,8 +35,20 @@ export default async function HomePage() {
 
   const latestPosts = posts.slice(0, 3);
 
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: siteName,
+    url: siteUrl,
+    description: siteDescription,
+  };
+
   return (
     <div className="bg-tertiary/30">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Radial depth gradient — warms the center behind headings */}

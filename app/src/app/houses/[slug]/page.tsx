@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { createServerSupabase } from '@/lib/supabase/server';
+import { siteUrl } from '@/lib/siteConfig';
 
 export const revalidate = 300;
 
@@ -47,9 +48,17 @@ export async function generateMetadata({
     .single();
 
   if (!data) return { title: 'House Not Found' };
+
+  const title = data.name;
+  const description = data.description ?? `Explore fragrances from ${data.name} on Noseblind.`;
+  const url = `${siteUrl}/houses/${slug}`;
+
   return {
-    title: data.name,
-    description: data.description ?? `Explore fragrances from ${data.name}`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { title, description, url, type: 'website' },
+    twitter: { card: 'summary_large_image', title, description },
   };
 }
 
