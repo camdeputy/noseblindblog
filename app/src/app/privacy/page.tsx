@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'Privacy policy for Noseblind.',
 };
 
-const EFFECTIVE_DATE = 'March 2, 2026';
+const EFFECTIVE_DATE = 'March 4, 2026';
 
 export default function PrivacyPage() {
   return (
@@ -41,8 +41,26 @@ export default function PrivacyPage() {
           is used solely to respond to your inquiry.
         </p>
         <p className="mt-4">
-          We use <strong>Google Analytics 4</strong> (GA4), a web analytics service provided by
-          Google LLC. When you visit this site, GA4 automatically collects:
+          We use <strong>Vercel Analytics</strong> and <strong>Vercel Speed Insights</strong>,
+          services provided by Vercel, Inc., our hosting provider. These tools collect:
+        </p>
+        <ul className="list-disc list-inside mt-3 space-y-1 text-primary/80">
+          <li>Pages visited and navigation paths</li>
+          <li>Referring website that brought you here</li>
+          <li>Country derived from IP address (IP address is not stored)</li>
+          <li>Browser type, operating system, and device category</li>
+          <li>Core Web Vitals and page load performance metrics (Speed Insights only)</li>
+        </ul>
+        <p className="mt-4">
+          Vercel Analytics and Speed Insights are <strong>cookieless</strong> — they do not place
+          any cookies in your browser. Your IP address is used only to derive a country-level
+          location and is not retained. This data is aggregated and used solely to understand site
+          traffic patterns and identify performance issues.
+        </p>
+        <p className="mt-4">
+          We also use <strong>Google Analytics 4</strong> (GA4), a web analytics service provided
+          by Google LLC. When you visit this site and have accepted cookies, GA4 automatically
+          collects:
         </p>
         <ul className="list-disc list-inside mt-3 space-y-1 text-primary/80">
           <li>Pages visited and time spent on each page</li>
@@ -52,8 +70,9 @@ export default function PrivacyPage() {
           <li>A randomly assigned, anonymized identifier stored in a cookie</li>
         </ul>
         <p className="mt-4">
-          This data is aggregated and used solely to understand how visitors interact with the site
-          (e.g., which pages are most read). We do not use it to identify individual people.
+          GA4 data is aggregated and used solely to understand how visitors interact with the site.
+          We do not use it to identify individual people. GA4 is only loaded after you accept
+          cookies via the cookie consent banner.
         </p>
         <p className="mt-4">
           For security purposes, your IP address is temporarily processed when you submit a request
@@ -94,11 +113,17 @@ export default function PrivacyPage() {
           <code className="text-sm bg-tertiary/60 px-1 rounded">_gid</code>.
         </p>
         <p className="mt-4">
+          Vercel Analytics and Speed Insights do not use cookies and therefore fall outside the
+          scope of the ePrivacy Directive's cookie consent requirement. They are loaded on every
+          page visit regardless of your cookie preference.
+        </p>
+        <p className="mt-4">
           <strong>EU/EEA visitors:</strong> Under the GDPR and the ePrivacy Directive, analytics
           cookies are considered non-essential and, in many EU member states, require your prior
-          consent before being placed. We process analytics data under our legitimate interests as
-          described above. You have the right to object to this processing at any time by using any
-          of the opt-out methods below, and we will honor that objection.
+          consent before being placed. We process GA4 analytics data under our legitimate interests
+          as described above. Vercel's cookieless analytics are processed under legitimate interests
+          as well. You have the right to object to this processing at any time by contacting us
+          directly.
         </p>
         <p className="mt-4">
           You can opt out of GA4 tracking at any time by:
@@ -137,9 +162,29 @@ export default function PrivacyPage() {
         <p>We work with the following third-party services that may receive data about you:</p>
         <ul className="list-disc list-inside mt-3 space-y-3 text-primary/80">
           <li>
-            <strong>Google LLC</strong> — processes analytics data on our behalf. Google may
-            transfer and store this data on servers in the United States and other countries outside
-            the EU/EEA. For transfers from the EU/EEA to the United States, Google relies on the{' '}
+            <strong>Vercel, Inc.</strong> — hosts this Site and provides Vercel Analytics and
+            Speed Insights. As our hosting provider, all web traffic passes through Vercel's
+            infrastructure. Vercel Analytics collects cookieless, aggregated page-view data;
+            Speed Insights collects Core Web Vitals performance metrics. Neither service stores
+            your IP address or places cookies. Vercel is headquartered in the United States; for
+            transfers from the EU/EEA, Vercel relies on Standard Contractual Clauses as an
+            approved transfer mechanism under GDPR Article 46. Vercel's privacy policy is
+            available at{' '}
+            <a
+              href="https://vercel.com/legal/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-secondary underline hover:text-primary transition-colors"
+            >
+              vercel.com/legal/privacy-policy
+            </a>
+            .
+          </li>
+          <li>
+            <strong>Google LLC</strong> — processes GA4 analytics data on our behalf, loaded only
+            after cookie consent is granted. Google may transfer and store this data on servers in
+            the United States and other countries outside the EU/EEA. For transfers from the
+            EU/EEA to the United States, Google relies on the{' '}
             <strong>EU–US Data Privacy Framework</strong> and{' '}
             <strong>Standard Contractual Clauses</strong> as approved transfer mechanisms under
             GDPR Article 46. Google's privacy policy is available at{' '}

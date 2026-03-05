@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { Cormorant_Garamond, Source_Sans_3 } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
@@ -44,6 +46,9 @@ export default async function RootLayout({
         <Header />
         <main className="grow">{children}</main>
         <Footer />
+        {/* Cookieless — no consent gate needed */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

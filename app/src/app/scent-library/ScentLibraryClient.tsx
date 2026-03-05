@@ -42,19 +42,38 @@ interface Props {
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const SEARCH_MAX_LENGTH = 100;
+
+function normalizeSearchInput(raw: string): string {
+  return raw
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // strip control chars
+    .replace(/\s+/g, ' ')                                // collapse whitespace
+    .replace(/[%_]/g, '')                                // strip LIKE metacharacters
+    .slice(0, SEARCH_MAX_LENGTH);
+}
 
 // ── Main component ───────────────────────────────────────────────────────────
 
 export default function ScentLibraryClient({ initialHouses, hasMore: initialHasMore, recentFragrances, availableLetters }: Props) {
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<HouseWithFragrances[]>([]);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+
+  // Adaptive debounce: shorter delay when the user pauses, longer when typing fast.
+  // Keystroke interval → delay: 0 ms apart → DEBOUNCE_MAX, ≥ DEBOUNCE_MAX apart → DEBOUNCE_MIN.
+  const DEBOUNCE_MIN_MS = 150;
+  const DEBOUNCE_MAX_MS = 500;
+  const lastKeystrokeRef = useRef<number>(Date.now());
+  const debounceDelayRef = useRef<number>(DEBOUNCE_MAX_MS);
 
   // Infinite scroll state
   const [houses, setHouses] = useState<HouseWithFragrances[]>(initialHouses);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [page, setPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   const fetchMore = useCallback(async () => {
     if (isFetchingMore || !hasMore) return;
@@ -73,19 +92,46 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
     }
   }, [isFetchingMore, hasMore, page]);
 
+  // Adaptive debounce: fires with the delay computed at the last keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery.trim()), debounceDelayRef.current);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch search results from the API when the debounced query changes
+  useEffect(() => {
+    if (!debouncedQuery) {
+      setSearchResults([]);
+      return;
+    }
+    setIsSearchLoading(true);
+    fetch(`/api/scent-library?q=${encodeURIComponent(debouncedQuery)}`)
+      .then((r) => r.json())
+      .then((data) => setSearchResults(data.houses ?? []))
+      .catch((err) => console.error('[scent-library] search error:', err))
+      .finally(() => setIsSearchLoading(false));
+  }, [debouncedQuery]);
+
   // Keep a stable ref so the observer callback always calls the latest fetchMore
+  // without needing to recreate the IntersectionObserver on every render.
   const fetchMoreRef = useRef(fetchMore);
   fetchMoreRef.current = fetchMore;
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
+  // Callback ref: wires/unwires the IntersectionObserver each time the sentinel
+  // mounts or unmounts (e.g. toggling search mode). A plain useEffect with []
+  // only ran once — if the sentinel unmounted and remounted, the observer was
+  // left watching a detached node and would never fire again.
+  const sentinelCallbackRef = useCallback((node: HTMLDivElement | null) => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
+    if (!node) return;
+    observerRef.current = new IntersectionObserver(
       (entries) => { if (entries[0].isIntersecting) fetchMoreRef.current(); },
       { rootMargin: '300px' },
     );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
+    observerRef.current.observe(node);
   }, []);
 
   const availableLetterSet = useMemo(() => new Set(availableLetters), [availableLetters]);
@@ -93,30 +139,21 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
   const isSearching = searchQuery.trim().length > 0;
   const showRecent = !isSearching && selectedFilter === 'recent';
 
+  // Letter-filter applied to loaded paginated houses (only used when not searching)
   const filteredHouses = useMemo<HouseWithFragrances[]>(() => {
-    const q = searchQuery.trim().toLowerCase();
-
-    if (q) {
-      return houses
-        .map((house) => {
-          if (house.name.toLowerCase().includes(q)) return house;
-          const matching = house.fragrances.filter((f) =>
-            f.name.toLowerCase().includes(q)
-          );
-          if (matching.length > 0) return { ...house, fragrances: matching };
-          return null;
-        })
-        .filter(Boolean) as HouseWithFragrances[];
-    }
-
-    if (selectedFilter === 'recent') return [];
+    if (selectedFilter === 'recent' || isSearching) return [];
     if (selectedFilter) {
       return houses.filter((h) => h.name.charAt(0).toUpperCase() === selectedFilter);
     }
     return houses;
-  }, [houses, searchQuery, selectedFilter]);
+  }, [houses, selectedFilter, isSearching]);
 
-  const isEmpty = showRecent ? recentFragrances.length === 0 : filteredHouses.length === 0;
+  // What actually renders in the house list
+  const displayedHouses = isSearching ? searchResults : filteredHouses;
+
+  const isEmpty = showRecent
+    ? recentFragrances.length === 0
+    : !isSearchLoading && displayedHouses.length === 0;
 
   return (
     <div className="min-h-screen bg-tertiary/30">
@@ -148,8 +185,17 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
               type="text"
               value={searchQuery}
               onChange={(e) => {
-                setSearchQuery(e.target.value);
-                if (e.target.value.trim()) setSelectedFilter(null);
+                const now = Date.now();
+                const interval = now - lastKeystrokeRef.current;
+                lastKeystrokeRef.current = now;
+                // Fast typing (small interval) → long delay; slow / deliberate pause → short delay
+                debounceDelayRef.current = Math.max(
+                  DEBOUNCE_MIN_MS,
+                  Math.min(DEBOUNCE_MAX_MS, DEBOUNCE_MAX_MS - interval),
+                );
+                const value = normalizeSearchInput(e.target.value);
+                setSearchQuery(value);
+                if (value.trim()) setSelectedFilter(null);
               }}
               placeholder="Search houses or fragrances..."
               className="w-full pl-10 pr-10 py-3 bg-white/70 border border-secondary/20 rounded-full text-primary placeholder:text-primary/30 focus:outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary/40 text-sm transition-all"
@@ -261,28 +307,33 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
               ))}
             </div>
           </>
+        ) : isSearchLoading ? (
+          <div className="space-y-16">
+            <InlineHouseRowSkeleton isReversed={false} />
+            <InlineHouseRowSkeleton isReversed={true} />
+          </div>
         ) : (
           <>
             {isSearching && (
               <p className="text-sm text-primary/50 mb-8">
-                {filteredHouses.length} house{filteredHouses.length !== 1 ? 's' : ''} for &ldquo;{searchQuery}&rdquo;
+                {displayedHouses.length} house{displayedHouses.length !== 1 ? 's' : ''} for &ldquo;{searchQuery}&rdquo;
               </p>
             )}
             <div className="space-y-16">
-              {filteredHouses.map((house, index) => (
+              {displayedHouses.map((house, index) => (
                 <HouseRow key={house.id} house={house} isReversed={index % 2 === 1} index={index} />
               ))}
             </div>
 
-            {/* Inline skeleton while fetching next page */}
-            {isFetchingMore && (
+            {/* Inline skeleton while fetching next page (browse mode only) */}
+            {!isSearching && isFetchingMore && (
               <div className="space-y-16 mt-16">
-                <InlineHouseRowSkeleton isReversed={filteredHouses.length % 2 === 1} />
+                <InlineHouseRowSkeleton isReversed={displayedHouses.length % 2 === 1} />
               </div>
             )}
 
-            {/* Sentinel — always mounted when hasMore so scroll triggers load in any view */}
-            {hasMore && <div ref={sentinelRef} className="h-2" aria-hidden="true" />}
+            {/* Sentinel — only active in browse mode so infinite scroll doesn't trigger during search */}
+            {!isSearching && hasMore && <div ref={sentinelCallbackRef} className="h-2" aria-hidden="true" />}
           </>
         )}
       </section>
