@@ -27,7 +27,7 @@ export async function generateMetadata({
     .maybeSingle();
 
   const title = fragrance.fragrance_houses?.name
-    ? `${fragrance.name} — ${fragrance.fragrance_houses.name}`
+    ? `${fragrance.name} | ${fragrance.fragrance_houses.name}`
     : fragrance.name;
   const description =
     fragrance.description?.slice(0, 155) ??

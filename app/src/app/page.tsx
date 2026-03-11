@@ -4,37 +4,93 @@ import { Post } from '@/types/post';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { siteUrl, siteName, siteDescription } from '@/lib/siteConfig';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
-  title: { absolute: `${siteName} — Fragrance Reviews & Scent Library` },
+  title: { absolute: `${siteName} | Fragrance Reviews & Scent Library` },
   description: siteDescription,
   alternates: { canonical: siteUrl },
   openGraph: {
-    title: `${siteName} — Fragrance Reviews & Scent Library`,
+    title: `${siteName} | Fragrance Reviews & Scent Library`,
     description: siteDescription,
     url: siteUrl,
     type: 'website',
   },
   twitter: {
-    title: `${siteName} — Fragrance Reviews & Scent Library`,
+    title: `${siteName} | Fragrance Reviews & Scent Library`,
     description: siteDescription,
   },
 };
 
 export const revalidate = 300;
 
-export default async function HomePage() {
+async function LatestPosts() {
   let posts: Post[] = [];
-  let error: string | null = null;
 
   try {
     posts = await getPosts();
-  } catch (e) {
-    error = e instanceof Error ? e.message : 'Failed to load posts';
+  } catch {
+    return <p className="text-primary/50 text-center py-12">Could not load posts.</p>;
   }
 
   const latestPosts = posts.slice(0, 3);
 
+  if (latestPosts.length === 0) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {placeholderCards.map((card, i) => (
+          <PlaceholderCard key={i} {...card} index={i + 1} />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {latestPosts.map((post, i) => (
+        <Link
+          key={post.id}
+          href={`/posts/${post.slug}`}
+          className="bg-tertiary/30 hover:bg-tertiary/60 transition-colors group card-shadow border border-secondary/10"
+        >
+          <div className="aspect-4/3 bg-tertiary/50 flex items-center justify-center card-image-depth">
+            <span className="font-display text-6xl text-secondary/30">{i + 1}</span>
+          </div>
+          <div className="py-4 px-4">
+            <div className="flex items-center gap-3 text-xs text-primary/75 mb-2">
+              <span className="uppercase tracking-wider font-medium">
+                {post.tags?.[0] || 'Journal'}
+              </span>
+              <span>&middot;</span>
+              <span>{new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
+            </div>
+            <h3 className="font-display text-lg font-semibold text-primary group-hover:text-secondary transition-colors">
+              {post.title}
+            </h3>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function LatestPostsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="bg-tertiary/30 card-shadow border border-secondary/10 animate-pulse">
+          <div className="aspect-4/3 bg-tertiary/50" />
+          <div className="py-4 px-4 space-y-2">
+            <div className="h-3 bg-tertiary/70 rounded w-1/3" />
+            <div className="h-5 bg-tertiary/70 rounded w-3/4" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default async function HomePage() {
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -138,41 +194,9 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        {error ? (
-          <p className="text-red-600 text-center py-12">{error}</p>
-        ) : latestPosts.length === 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {placeholderCards.map((card, i) => (
-              <PlaceholderCard key={i} {...card} index={i + 1} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {latestPosts.map((post, i) => (
-              <Link
-                key={post.id}
-                href={`/posts/${post.slug}`}
-                className="bg-tertiary/30 hover:bg-tertiary/60 transition-colors group card-shadow border border-secondary/10"
-              >
-                <div className="aspect-4/3 bg-tertiary/50 flex items-center justify-center card-image-depth">
-                  <span className="font-display text-6xl text-secondary/30">{i + 1}</span>
-                </div>
-                <div className="py-4 px-4">
-                  <div className="flex items-center gap-3 text-xs text-primary/75 mb-2">
-                    <span className="uppercase tracking-wider font-medium">
-                      {post.tags?.[0] || 'Journal'}
-                    </span>
-                    <span>&middot;</span>
-                    <span>{new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
-                  </div>
-                  <h3 className="font-display text-lg font-semibold text-primary group-hover:text-secondary transition-colors">
-                    {post.title}
-                  </h3>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        <Suspense fallback={<LatestPostsSkeleton />}>
+          <LatestPosts />
+        </Suspense>
       </section>
     </div>
   );
