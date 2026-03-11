@@ -55,6 +55,24 @@ export default async function ScentLibraryPage() {
 
   const fragrances = fragrancesData ?? [];
 
+  // Batch-fetch primary images for houses and fragrances in parallel
+  const allFragIds = [
+    ...fragrances.map((f) => f.id),
+    ...(recentFragData ?? []).map((f) => f.id),
+  ];
+
+  const [{ data: houseImgData }, { data: fragImgData }] = await Promise.all([
+    houseIds.length > 0
+      ? supabase.from('house_images').select('house_id, url').in('house_id', houseIds).eq('is_primary', true)
+      : Promise.resolve({ data: [] }),
+    allFragIds.length > 0
+      ? supabase.from('fragrance_images').select('fragrance_id, url').in('fragrance_id', allFragIds).eq('is_primary', true)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const houseImageMap = new Map((houseImgData ?? []).map((i) => [i.house_id, i.url]));
+  const fragImageMap = new Map((fragImgData ?? []).map((i) => [i.fragrance_id, i.url]));
+
   // Available letters derived from ALL houses, not just the first page
   const availableLetters = [
     ...new Set(
@@ -73,13 +91,18 @@ export default async function ScentLibraryPage() {
 
   const initialHouses: HouseWithFragrances[] = houses.map((h) => ({
     ...h,
-    fragrances: byHouse.get(h.id) ?? [],
+    logo_url: houseImageMap.get(h.id) ?? null,
+    fragrances: (byHouse.get(h.id) ?? []).map((f) => ({
+      ...f,
+      primary_image_url: fragImageMap.get(f.id) ?? null,
+    })),
   }));
 
   const houseNameById = new Map(allHouses.map((h) => [h.id, h.name]));
   const recentFragrances: FragranceWithHouseName[] = (recentFragData ?? []).map((f) => ({
     ...f,
     houseName: houseNameById.get(f.house_id) ?? '',
+    primary_image_url: fragImageMap.get(f.id) ?? null,
   }));
 
   return (

@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1006.0",
+    "@aws-sdk/credential-providers": "^3.1006.0",
+    "@aws-sdk/s3-request-presigner": "^3.1006.0",
     "@supabase/supabase-js": "^2.93.2",
     "@uiw/react-md-editor": "^4.0.4",
     "@upstash/ratelimit": "^2.0.8",

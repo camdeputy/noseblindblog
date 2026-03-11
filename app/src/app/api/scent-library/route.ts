@@ -91,9 +91,29 @@ export async function GET(request: NextRequest) {
       a.name.localeCompare(b.name),
     );
 
+    // Batch-fetch primary images
+    const allHouseIds = allHouses.map((h) => h.id);
+    const allFragIds = [...byHouse.values()].flat().map((f) => f.id);
+
+    const [{ data: houseImgData }, { data: fragImgData }] = await Promise.all([
+      allHouseIds.length > 0
+        ? supabase.from('house_images').select('house_id, url').in('house_id', allHouseIds).eq('is_primary', true)
+        : Promise.resolve({ data: [] }),
+      allFragIds.length > 0
+        ? supabase.from('fragrance_images').select('fragrance_id, url').in('fragrance_id', allFragIds).eq('is_primary', true)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const houseImageMap = new Map((houseImgData ?? []).map((i) => [i.house_id, i.url]));
+    const fragImageMap = new Map((fragImgData ?? []).map((i) => [i.fragrance_id, i.url]));
+
     const housesWithFragrances = allHouses.map((h) => ({
       ...h,
-      fragrances: byHouse.get(h.id) ?? [],
+      logo_url: houseImageMap.get(h.id) ?? null,
+      fragrances: (byHouse.get(h.id) ?? []).map((f) => ({
+        ...f,
+        primary_image_url: fragImageMap.get(f.id) ?? null,
+      })),
     }));
 
     return NextResponse.json({ houses: housesWithFragrances, hasMore: false, total: allHouses.length });
@@ -143,9 +163,26 @@ export async function GET(request: NextRequest) {
     byHouse.set(f.house_id, arr);
   }
 
+  // Batch-fetch primary images
+  const allFragIds = fragrances.map((f) => f.id);
+
+  const [{ data: houseImgData }, { data: fragImgData }] = await Promise.all([
+    supabase.from('house_images').select('house_id, url').in('house_id', houseIds).eq('is_primary', true),
+    allFragIds.length > 0
+      ? supabase.from('fragrance_images').select('fragrance_id, url').in('fragrance_id', allFragIds).eq('is_primary', true)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const houseImageMap = new Map((houseImgData ?? []).map((i) => [i.house_id, i.url]));
+  const fragImageMap = new Map((fragImgData ?? []).map((i) => [i.fragrance_id, i.url]));
+
   const housesWithFragrances = houses.map((h) => ({
     ...h,
-    fragrances: byHouse.get(h.id) ?? [],
+    logo_url: houseImageMap.get(h.id) ?? null,
+    fragrances: (byHouse.get(h.id) ?? []).map((f) => ({
+      ...f,
+      primary_image_url: fragImageMap.get(f.id) ?? null,
+    })),
   }));
 
   const total = count ?? 0;

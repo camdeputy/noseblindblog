@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 // ── Types (exported so page.tsx can reuse them) ──────────────────────────────
 
@@ -25,6 +26,7 @@ export type Fragrance = {
   house_id: string;
   review_post_id: string | null;
   created_at?: string;
+  primary_image_url?: string | null;
 };
 
 export type HouseWithFragrances = FragranceHouse & { fragrances: Fragrance[] };
@@ -354,9 +356,9 @@ function HouseRow({ house, isReversed, index }: HouseRowProps) {
 
   const brandContent = (
     <div className="flex flex-col items-center md:items-start text-center md:text-left">
-      <div className="w-32 h-32 md:w-40 md:h-40 bg-tertiary/50 rounded-full flex items-center justify-center mb-6 border-2 border-secondary/20 overflow-hidden avatar-depth">
+      <div className="relative w-32 h-32 md:w-40 md:h-40 bg-tertiary/50 rounded-full flex items-center justify-center mb-6 border-2 border-secondary/20 overflow-hidden avatar-depth">
         {house.logo_url ? (
-          <img src={house.logo_url} alt={house.name} className="w-full h-full object-cover" />
+          <Image src={house.logo_url} alt={house.name} fill className="object-cover" sizes="160px" />
         ) : (
           <span className="font-display text-4xl md:text-5xl text-secondary/30">
             {house.name.charAt(0)}
@@ -413,7 +415,17 @@ function HouseRow({ house, isReversed, index }: HouseRowProps) {
                 href={`/fragrances/${fragrance.slug}`}
                 className="group block bg-white/50 hover:bg-tertiary/60 border border-secondary/10 hover:border-secondary/30 rounded-lg p-4 transition-all duration-300 card-shadow"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="relative w-10 h-14 shrink-0 rounded overflow-hidden bg-tertiary/40">
+                    {fragrance.primary_image_url ? (
+                      <Image src={fragrance.primary_image_url} alt={fragrance.name} fill className="object-cover" sizes="40px" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <BottleIcon className="w-5 h-7 text-secondary/20" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <h4 className="font-display text-lg font-semibold text-primary group-hover:text-secondary transition-colors">
                       {fragrance.name}
@@ -442,6 +454,7 @@ function HouseRow({ house, isReversed, index }: HouseRowProps) {
                       <span className="text-sm font-medium text-primary">{fragrance.rating}</span>
                     </div>
                   )}
+                  </div>
                 </div>
                 <span className="inline-flex items-center gap-1 text-xs text-secondary mt-3 group-hover:gap-2 transition-all">
                   View Fragrance
@@ -489,8 +502,18 @@ function FragranceCard({ fragrance }: { fragrance: FragranceWithHouseName }) {
   return (
     <Link
       href={`/fragrances/${fragrance.slug}`}
-      className="group flex flex-col bg-white/60 hover:bg-white border border-secondary/10 hover:border-secondary/30 rounded-xl p-5 transition-all duration-300 card-shadow"
+      className="group flex flex-col bg-white/60 hover:bg-white border border-secondary/10 hover:border-secondary/30 rounded-xl overflow-hidden transition-all duration-300 card-shadow"
     >
+      <div className="relative aspect-[4/3] bg-tertiary/40">
+        {fragrance.primary_image_url ? (
+          <Image src={fragrance.primary_image_url} alt={fragrance.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <BottleIcon className="w-10 h-14 text-secondary/15" />
+          </div>
+        )}
+      </div>
+      <div className="p-5 flex flex-col flex-1">
       <p className="text-xs text-secondary font-medium tracking-widest uppercase mb-2">
         {fragrance.houseName}
       </p>
@@ -534,6 +557,7 @@ function FragranceCard({ fragrance }: { fragrance: FragranceWithHouseName }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
         </svg>
       </span>
+      </div>
     </Link>
   );
 }

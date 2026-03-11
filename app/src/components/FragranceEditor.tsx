@@ -7,6 +7,7 @@ import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import Select from '@/components/ui/Select';
 import NoteSelector from '@/components/NoteSelector';
+import ImageUploader, { ImageRecord } from '@/components/ImageUploader';
 import { createFragrance, updateFragrance, deleteFragrance, getFragrance, getAdminHouses, getAdminPosts } from '@/lib/api';
 import { FragranceHouse, Fragrance, NoteAssignment } from '@/types/fragrance';
 import { Post } from '@/types/post';
@@ -38,6 +39,7 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
   const [fragranceUrl, setFragranceUrl] = useState(fragrance?.fragrance_url ?? '');
   const [reviewPostId, setReviewPostId] = useState(fragrance?.review_post_id ?? '');
   const [notes, setNotes] = useState<NoteAssignment[]>([]);
+  const [images, setImages] = useState<ImageRecord[]>([]);
 
   // Slug auto-generation helper
   function toSlug(value: string) {
@@ -61,9 +63,14 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
           getAdminHouses(),
           getAdminPosts().catch(() => [] as Post[]),
         ];
-        // If editing, also fetch the full fragrance with notes
+        // If editing, also fetch the full fragrance with notes and images
         if (isEdit && fragrance) {
           promises.push(getFragrance(fragrance.id));
+          promises.push(
+            fetch(`/api/admin/fragrances/${fragrance.id}/images`)
+              .then((r) => r.json())
+              .catch(() => [])
+          );
         }
 
         const results = await Promise.all(promises);
@@ -73,6 +80,9 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
         if (isEdit && results[2]) {
           const full = results[2] as { notes: NoteAssignment[] };
           setNotes(full.notes || []);
+        }
+        if (isEdit && results[3]) {
+          setImages(results[3] as ImageRecord[]);
         }
       } catch (err) {
         console.error('Failed to load form data:', err);
@@ -299,6 +309,19 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
           <h4 className="text-sm font-semibold text-primary mb-4">Fragrance Notes</h4>
           <NoteSelector notes={notes} onChange={setNotes} />
         </div>
+
+        {/* Images — only available when editing an existing fragrance */}
+        {isEdit && fragrance?.id && (
+          <div className="border-t border-gray-200 pt-4 mt-4">
+            <h4 className="text-sm font-semibold text-primary mb-4">Images</h4>
+            <ImageUploader
+              entityType="fragrance"
+              entityId={fragrance.id}
+              images={images}
+              onChange={setImages}
+            />
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3 mt-6 pt-4 border-t border-gray-200">

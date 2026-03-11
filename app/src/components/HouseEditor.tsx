@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2, Trash2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
+import ImageUploader, { ImageRecord } from '@/components/ImageUploader';
 import { createHouse, updateHouse, deleteHouse } from '@/lib/api';
 import { FragranceHouse } from '@/types/fragrance';
 
@@ -25,9 +26,19 @@ export default function HouseEditor({ mode = 'create', house, onSuccess, onCance
   function toSlug(value: string) {
     return value.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
   }
+  const [images, setImages] = useState<ImageRecord[]>([]);
+
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!isEdit || !house?.id) return;
+    fetch(`/api/admin/houses/${house.id}/images`)
+      .then((r) => r.json())
+      .then((data) => setImages(data as ImageRecord[]))
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -131,6 +142,19 @@ export default function HouseEditor({ mode = 'create', house, onSuccess, onCance
           placeholder="https://..."
           disabled={busy}
         />
+
+        {/* Images — only available when editing an existing house */}
+        {isEdit && house?.id && (
+          <div className="border-t border-gray-200 pt-4 mt-2">
+            <label className="block text-sm font-semibold text-primary mb-4">Images</label>
+            <ImageUploader
+              entityType="house"
+              entityId={house.id}
+              images={images}
+              onChange={setImages}
+            />
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3 mt-6">

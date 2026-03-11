@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Plus, Edit, Loader2, LogOut, Search, X } from 'lucide-react';
@@ -415,18 +415,7 @@ function BrandsTab({
         </div>
       )}
 
-      {editingHouse && (
-        <div className="mb-6">
-          <HouseEditor
-            mode="edit"
-            house={editingHouse}
-            onSuccess={onSaved}
-            onCancel={onCancel}
-          />
-        </div>
-      )}
-
-      {!showForm && !editingHouse && houses.length > 0 && (
+      {!showForm && houses.length > 0 && (
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           <input
@@ -471,21 +460,39 @@ function BrandsTab({
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filtered.map((house) => (
-                <tr key={house.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-primary">{house.name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {house.description || '—'}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {house.created_at ? formatDate(house.created_at) : '—'}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <Button variant="secondary" size="sm" onClick={() => onEdit(house)}>
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
-                  </td>
-                </tr>
+                <Fragment key={house.id}>
+                  <tr className={editingHouse?.id === house.id ? 'bg-gray-50' : 'hover:bg-gray-50'}>
+                    <td className="px-6 py-4 font-medium text-primary">{house.name}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {house.description || '—'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {house.created_at ? formatDate(house.created_at) : '—'}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {editingHouse?.id === house.id ? (
+                        <span className="text-xs text-gray-400">editing…</span>
+                      ) : (
+                        <Button variant="secondary" size="sm" onClick={() => onEdit(house)}>
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                  {editingHouse?.id === house.id && (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-4 bg-gray-50">
+                        <HouseEditor
+                          mode="edit"
+                          house={editingHouse}
+                          onSuccess={onSaved}
+                          onCancel={onCancel}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -561,19 +568,7 @@ function FragrancesTab({
         </div>
       )}
 
-      {editingFragrance && (
-        <div className="mb-6">
-          <FragranceEditor
-            key={editingFragrance.id}
-            mode="edit"
-            fragrance={editingFragrance}
-            onSuccess={onSaved}
-            onCancel={onCancel}
-          />
-        </div>
-      )}
-
-      {!showForm && !editingFragrance && fragrances.length > 0 && (
+      {!showForm && fragrances.length > 0 && (
         <div className="flex gap-3 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -634,32 +629,51 @@ function FragrancesTab({
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filtered.map((frag) => (
-                <tr key={frag.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <p className="font-medium text-primary">{frag.name}</p>
-                    {frag.description && (
-                      <p className="text-sm text-gray-500 truncate max-w-xs">{frag.description}</p>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {frag.fragrance_houses?.name || '—'}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {frag.rating != null ? `${frag.rating}/5` : '—'}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {formatPrice(frag.price_cents, frag.currency)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {frag.created_at ? formatDate(frag.created_at) : '—'}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <Button variant="secondary" size="sm" onClick={() => onEdit(frag)}>
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
-                  </td>
-                </tr>
+                <Fragment key={frag.id}>
+                  <tr className={editingFragrance?.id === frag.id ? 'bg-gray-50' : 'hover:bg-gray-50'}>
+                    <td className="px-6 py-4">
+                      <p className="font-medium text-primary">{frag.name}</p>
+                      {frag.description && (
+                        <p className="text-sm text-gray-500 truncate max-w-xs">{frag.description}</p>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {frag.fragrance_houses?.name || '—'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {frag.rating != null ? `${frag.rating}/5` : '—'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {formatPrice(frag.price_cents, frag.currency)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {frag.created_at ? formatDate(frag.created_at) : '—'}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {editingFragrance?.id === frag.id ? (
+                        <span className="text-xs text-gray-400">editing…</span>
+                      ) : (
+                        <Button variant="secondary" size="sm" onClick={() => onEdit(frag)}>
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                  {editingFragrance?.id === frag.id && (
+                    <tr>
+                      <td colSpan={6} className="px-4 pb-4 pt-0 bg-gray-50">
+                        <FragranceEditor
+                          key={editingFragrance.id}
+                          mode="edit"
+                          fragrance={editingFragrance}
+                          onSuccess={onSaved}
+                          onCancel={onCancel}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>

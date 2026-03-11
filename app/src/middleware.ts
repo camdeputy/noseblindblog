@@ -59,6 +59,15 @@ async function verifySessionToken(
 function buildCSP(nonce: string): string {
   const isDev = process.env.NODE_ENV === 'development';
 
+  // S3 presigned upload endpoint — browser PUTs directly to this origin
+  const s3UploadOrigin =
+    process.env.AWS_MEDIA_BUCKET && process.env.AWS_MEDIA_REGION
+      ? `https://${process.env.AWS_MEDIA_BUCKET}.s3.${process.env.AWS_MEDIA_REGION}.amazonaws.com`
+      : '';
+
+  // CloudFront media CDN — allow images served from this origin
+  const mediaOrigin = process.env.NEXT_PUBLIC_MEDIA_BASE_URL?.replace(/\/$/, '') ?? '';
+
   return [
     `default-src 'self'`,
     // unsafe-eval required in dev for React Fast Refresh; never present in production
@@ -66,8 +75,8 @@ function buildCSP(nonce: string): string {
     // unsafe-inline needed for Next.js critical CSS and inline style= attributes
     `style-src 'self' 'unsafe-inline'`,
     `font-src 'self'`,
-    `img-src 'self'`,
-    `connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://region1.google-analytics.com https://www.googletagmanager.com https://cm6xvdr4ja.execute-api.us-west-1.amazonaws.com https://vitals.vercel-insights.com`,
+    `img-src 'self'${mediaOrigin ? ` ${mediaOrigin}` : ''}`,
+    `connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://region1.google-analytics.com https://www.googletagmanager.com https://cm6xvdr4ja.execute-api.us-west-1.amazonaws.com https://vitals.vercel-insights.com ${s3UploadOrigin ? ` ${s3UploadOrigin}` : ''}`,
     `frame-src 'none'`,
     `object-src 'none'`,
     `base-uri 'self'`,

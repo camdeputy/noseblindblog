@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { siteUrl } from '@/lib/siteConfig';
@@ -26,6 +27,7 @@ type HouseFragrance = {
   currency: string | null;
   size_ml: number | null;
   fragrance_url: string | null;
+  primary_image_url?: string | null;
 };
 
 export async function generateStaticParams() {
@@ -187,7 +189,24 @@ export default async function HousePage({
     .eq('house_id', house.id)
     .order('name', { ascending: true });
 
-  const fragrances: HouseFragrance[] = fragrancesRaw ?? [];
+  const fragrancesBase = fragrancesRaw ?? [];
+  const fragIds = fragrancesBase.map((f) => f.id);
+
+  // Fetch primary images for house and fragrances in parallel
+  const [{ data: houseImgData }, { data: fragImgData }] = await Promise.all([
+    supabase.from('house_images').select('url').eq('house_id', house.id).eq('is_primary', true).maybeSingle(),
+    fragIds.length > 0
+      ? supabase.from('fragrance_images').select('fragrance_id, url').in('fragrance_id', fragIds).eq('is_primary', true)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const housePrimaryImage = houseImgData?.url ?? null;
+  const fragImageMap = new Map((fragImgData ?? []).map((i) => [i.fragrance_id, i.url]));
+
+  const fragrances: HouseFragrance[] = fragrancesBase.map((f) => ({
+    ...f,
+    primary_image_url: fragImageMap.get(f.id) ?? null,
+  }));
 
   return (
     <div className="min-h-screen">
@@ -216,6 +235,13 @@ export default async function HousePage({
           <p className="text-xs tracking-[0.35em] uppercase text-primary/60 mb-8 font-medium">
             Fragrance House
           </p>
+
+          {/* House image */}
+          {housePrimaryImage && (
+            <div className="relative w-24 h-24 mx-auto mb-8 rounded-full overflow-hidden border-2 border-secondary/20">
+              <Image src={housePrimaryImage} alt={house.name} fill className="object-cover" sizes="96px" />
+            </div>
+          )}
 
           {/* Name */}
           <h1 className="font-display text-5xl sm:text-7xl md:text-8xl font-semibold text-primary leading-none tracking-tight mb-6">
@@ -289,20 +315,30 @@ export default async function HousePage({
                     key={fragrance.id}
                     className="bg-tertiary/30 card-shadow border border-secondary/10 overflow-hidden group"
                   >
-                    {/* Image placeholder */}
+                    {/* Image */}
                     <Link href={`/fragrances/${fragrance.slug}`} tabIndex={-1} aria-hidden="true">
-                      <div className="aspect-4/3 bg-tertiary/50 flex items-center justify-center card-image-depth">
-                        <svg
-                          viewBox="0 0 60 80"
-                          className="w-9 h-12 text-secondary/20 group-hover:text-secondary/30 transition-colors"
-                          fill="currentColor"
-                          aria-hidden="true"
-                        >
-                          <rect x="22" y="0" width="16" height="7" rx="2" />
-                          <rect x="10" y="7" width="40" height="62" rx="3" />
-                          <rect x="17" y="18" width="26" height="1.5" fill="white" opacity="0.3" />
-                          <rect x="17" y="24" width="18" height="1" fill="white" opacity="0.2" />
-                        </svg>
+                      <div className="aspect-4/3 bg-tertiary/50 flex items-center justify-center card-image-depth relative overflow-hidden">
+                        {fragrance.primary_image_url ? (
+                          <Image
+                            src={fragrance.primary_image_url}
+                            alt={fragrance.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            sizes="(max-width: 768px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <svg
+                            viewBox="0 0 60 80"
+                            className="w-9 h-12 text-secondary/20 group-hover:text-secondary/30 transition-colors"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <rect x="22" y="0" width="16" height="7" rx="2" />
+                            <rect x="10" y="7" width="40" height="62" rx="3" />
+                            <rect x="17" y="18" width="26" height="1.5" fill="white" opacity="0.3" />
+                            <rect x="17" y="24" width="18" height="1" fill="white" opacity="0.2" />
+                          </svg>
+                        )}
                       </div>
                     </Link>
 

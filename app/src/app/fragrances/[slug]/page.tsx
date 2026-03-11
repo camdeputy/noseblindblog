@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { getPosts } from '@/lib/api';
@@ -22,9 +23,8 @@ export async function generateMetadata({
     .from('fragrance_images')
     .select('url, alt_text')
     .eq('fragrance_id', fragrance.id)
-    .order('sort_order', { ascending: true })
-    .limit(1)
-    .single();
+    .eq('is_primary', true)
+    .maybeSingle();
 
   const title = fragrance.fragrance_houses?.name
     ? `${fragrance.name} — ${fragrance.fragrance_houses.name}`
@@ -132,6 +132,7 @@ async function getFragranceImages(fragranceId: string): Promise<FragranceImage[]
     .from('fragrance_images')
     .select('url, alt_text, sort_order')
     .eq('fragrance_id', fragranceId)
+    .order('is_primary', { ascending: false })
     .order('sort_order', { ascending: true });
 
   return (data ?? []) as FragranceImage[];
@@ -302,12 +303,14 @@ export default async function FragrancePage({
 
           {/* Left: Image */}
           <div className="flex flex-col gap-4">
-            <div className="aspect-3/4 bg-white/60 border border-secondary/10 rounded-2xl overflow-hidden flex items-center justify-center panel-depth">
+            <div className="relative aspect-3/4 bg-white/60 border border-secondary/10 rounded-2xl overflow-hidden flex items-center justify-center panel-depth">
               {primaryImage ? (
-                <img
+                <Image
                   src={primaryImage.url}
                   alt={primaryImage.alt_text ?? fragrance.name}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
               ) : (
                 /* Elegant placeholder */
@@ -322,8 +325,8 @@ export default async function FragrancePage({
             {images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-1">
                 {images.slice(1).map((img, i) => (
-                  <div key={i} className="w-20 h-20 shrink-0 rounded-lg overflow-hidden border border-secondary/10">
-                    <img src={img.url} alt={img.alt_text ?? fragrance.name} className="w-full h-full object-cover" />
+                  <div key={i} className="relative w-20 h-20 shrink-0 rounded-lg overflow-hidden border border-secondary/10">
+                    <Image src={img.url} alt={img.alt_text ?? fragrance.name} fill className="object-cover" sizes="80px" />
                   </div>
                 ))}
               </div>
