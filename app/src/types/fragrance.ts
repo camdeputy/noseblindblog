@@ -40,8 +40,10 @@ export interface Fragrance {
   price_cents: number | null;
   currency: string | null;
   size_ml: number | null;
+  concentration: string | null;
   fragrance_url: string | null;
   review_post_id: string | null;
+  notes_categorized: boolean;
   created_at: string;
   updated_at: string;
   fragrance_houses?: { name: string };
@@ -56,8 +58,10 @@ export interface CreateFragranceData {
   price_cents?: number;
   currency?: string;
   size_ml?: number;
+  concentration?: string;
   fragrance_url?: string;
   review_post_id?: string | null;
+  notes_categorized?: boolean;
   notes?: NoteAssignment[];
 }
 
@@ -77,8 +81,10 @@ export interface UpdateFragranceData {
   price_cents?: number;
   currency?: string;
   size_ml?: number;
+  concentration?: string;
   fragrance_url?: string;
   review_post_id?: string | null;
+  notes_categorized?: boolean;
   notes?: NoteAssignment[];
 }
 

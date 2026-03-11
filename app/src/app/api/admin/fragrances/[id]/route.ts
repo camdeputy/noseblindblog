@@ -53,8 +53,10 @@ export async function PUT(
     price_cents?: number;
     currency?: string;
     size_ml?: number;
+    concentration?: string;
     fragrance_url?: string;
     review_post_id?: string | null;
+    notes_categorized?: boolean;
     notes?: NoteAssignment[];
   };
 
@@ -78,8 +80,10 @@ export async function PUT(
   if (body.price_cents !== undefined) updates.price_cents = body.price_cents;
   if (body.currency !== undefined) updates.currency = body.currency.trim() || null;
   if (body.size_ml !== undefined) updates.size_ml = body.size_ml;
+  if (body.concentration !== undefined) updates.concentration = body.concentration?.trim() || null;
   if (body.fragrance_url !== undefined) updates.fragrance_url = body.fragrance_url.trim() || null;
   if (body.review_post_id !== undefined) updates.review_post_id = body.review_post_id || null;
+  if (body.notes_categorized !== undefined) updates.notes_categorized = body.notes_categorized;
 
   // Update fragrance fields
   if (Object.keys(updates).length > 0) {

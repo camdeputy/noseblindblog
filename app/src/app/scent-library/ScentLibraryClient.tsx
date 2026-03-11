@@ -23,6 +23,7 @@ export type Fragrance = {
   description: string | null;
   rating: number | null;
   size_ml: number | null;
+  concentration: string | null;
   house_id: string;
   review_post_id: string | null;
   created_at?: string;
@@ -430,8 +431,11 @@ function HouseRow({ house, isReversed, index }: HouseRowProps) {
                     <h4 className="font-display text-lg font-semibold text-primary group-hover:text-secondary transition-colors">
                       {fragrance.name}
                     </h4>
-                    {(fragrance.size_ml || fragrance.review_post_id) && (
-                      <div className="flex items-center gap-2 mt-1">
+                    {(fragrance.concentration || fragrance.size_ml || fragrance.review_post_id) && (
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        {fragrance.concentration && (
+                          <span className="text-xs text-secondary/70 font-medium">{fragrance.concentration}</span>
+                        )}
                         {fragrance.size_ml && (
                           <span className="text-xs text-primary/40">{fragrance.size_ml} ml</span>
                         )}
@@ -530,8 +534,13 @@ function FragranceCard({ fragrance }: { fragrance: FragranceWithHouseName }) {
         )}
       </div>
 
-      {(fragrance.size_ml || fragrance.review_post_id) && (
-        <div className="flex items-center gap-2 mb-3">
+      {(fragrance.concentration || fragrance.size_ml || fragrance.review_post_id) && (
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          {fragrance.concentration && (
+            <span className="text-xs bg-secondary/8 text-secondary border border-secondary/20 px-2 py-0.5 rounded-full font-medium">
+              {fragrance.concentration}
+            </span>
+          )}
           {fragrance.size_ml && (
             <span className="text-xs bg-tertiary/60 text-primary/60 px-2 py-0.5 rounded-full">
               {fragrance.size_ml} ml

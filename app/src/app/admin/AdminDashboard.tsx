@@ -8,11 +8,11 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import HouseEditor from '@/components/HouseEditor';
 import FragranceEditor from '@/components/FragranceEditor';
-import { getAdminPosts, getAdminHouses, getAdminFragrances } from '@/lib/api';
+import { getAdminPosts, getAdminHouses, getAdminFragrances, getConcentrations, createConcentration, deleteConcentration, Concentration } from '@/lib/api';
 import { Post } from '@/types/post';
 import { FragranceHouse, Fragrance } from '@/types/fragrance';
 
-type Tab = 'posts' | 'brands' | 'fragrances';
+type Tab = 'posts' | 'brands' | 'fragrances' | 'settings';
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -116,6 +116,7 @@ export default function AdminDashboard() {
     { key: 'posts', label: 'Posts' },
     { key: 'brands', label: 'Brands' },
     { key: 'fragrances', label: 'Fragrances' },
+    { key: 'settings', label: 'Settings' },
   ];
 
   return (
@@ -216,6 +217,9 @@ export default function AdminDashboard() {
           }}
         />
       )}
+
+      {/* Settings Tab */}
+      {activeTab === 'settings' && <SettingsTab />}
     </div>
   );
 }
@@ -621,6 +625,7 @@ function FragrancesTab({
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Name</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Brand</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Concentration</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Rating</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Price</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-primary">Created</th>
@@ -639,6 +644,9 @@ function FragrancesTab({
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {frag.fragrance_houses?.name || '—'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {frag.concentration || '—'}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {frag.rating != null ? `${frag.rating}/5` : '—'}
@@ -680,5 +688,114 @@ function FragrancesTab({
         </div>
       )}
     </>
+  );
+}
+
+// --- Settings Tab ---
+
+function SettingsTab() {
+  const [concentrations, setConcentrations] = useState<Concentration[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newName, setNewName] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    getConcentrations()
+      .then(setConcentrations)
+      .catch(() => setError('Failed to load concentrations'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    setError('');
+    setSaving(true);
+    try {
+      const created = await createConcentration(newName.trim());
+      setConcentrations((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
+      setNewName('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add concentration');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Remove this concentration?')) return;
+    setError('');
+    setDeletingId(id);
+    try {
+      await deleteConcentration(id);
+      setConcentrations((prev) => prev.filter((c) => c.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete concentration');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  return (
+    <div className="max-w-lg">
+      <h2 className="text-xl font-semibold text-primary mb-1">Settings</h2>
+      <p className="text-sm text-gray-500 mb-8">Manage catalog options used across all fragrances.</p>
+
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 className="text-base font-semibold text-primary mb-1">Concentrations</h3>
+        <p className="text-sm text-gray-500 mb-5">The list of concentrations available when editing a fragrance.</p>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex items-center gap-2 py-4 text-gray-400">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Loading…</span>
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-100 mb-5">
+            {concentrations.length === 0 && (
+              <li className="py-3 text-sm text-gray-400 italic">No concentrations yet.</li>
+            )}
+            {concentrations.map((c) => (
+              <li key={c.id} className="flex items-center justify-between py-2.5 gap-3">
+                <span className="text-sm text-primary">{c.name}</span>
+                <button
+                  onClick={() => handleDelete(c.id)}
+                  disabled={deletingId === c.id}
+                  className="text-gray-400 hover:text-red-500 transition-colors disabled:opacity-40"
+                  aria-label={`Remove ${c.name}`}
+                >
+                  {deletingId === c.id
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <X className="w-4 h-4" />}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <form onSubmit={handleAdd} className="flex gap-2">
+          <input
+            type="text"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="e.g. Eau de Parfum Intense"
+            disabled={saving}
+            className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 disabled:opacity-50"
+          />
+          <Button type="submit" disabled={saving || !newName.trim()} size="sm">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            Add
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 }

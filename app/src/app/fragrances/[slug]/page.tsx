@@ -85,8 +85,10 @@ type FragranceDetail = {
   price_cents: number | null;
   currency: string | null;
   size_ml: number | null;
+  concentration: string | null;
   fragrance_url: string | null;
   review_post_id: string | null;
+  notes_categorized: boolean;
   fragrance_houses: {
     name: string;
     slug: string | null;
@@ -280,6 +282,15 @@ export default async function FragrancePage({
               <div className="h-px flex-1 max-w-50" style={{background: 'linear-gradient(to right, rgba(178,112,146,0.30), transparent)'}} />
             </div>
 
+            {/* Concentration badge */}
+            {fragrance.concentration && (
+              <div className="mt-4">
+                <span className="inline-block text-xs tracking-widest uppercase font-medium text-secondary border border-secondary/30 rounded-full px-3 py-1">
+                  {fragrance.concentration}
+                </span>
+              </div>
+            )}
+
             {/* Rating — left-aligned */}
             {fragrance.rating != null && (
               <div className="flex items-center gap-1 mt-4">
@@ -419,17 +430,27 @@ export default async function FragrancePage({
             {hasNotes && (
               <div>
                 <SectionLabel>Fragrance Notes</SectionLabel>
-                <div className="space-y-4">
-                  {notesByPosition.top.length > 0 && (
-                    <NoteGroup label="Top" notes={notesByPosition.top} color="bg-secondary/10 text-secondary" />
-                  )}
-                  {notesByPosition.middle.length > 0 && (
-                    <NoteGroup label="Heart" notes={notesByPosition.middle} color="bg-primary/8 text-primary/70" />
-                  )}
-                  {notesByPosition.base.length > 0 && (
-                    <NoteGroup label="Base" notes={notesByPosition.base} color="bg-tertiary text-primary/60" />
-                  )}
-                </div>
+                {fragrance.notes_categorized ? (
+                  <div className="space-y-4">
+                    {notesByPosition.top.length > 0 && (
+                      <NoteGroup label="Top" notes={notesByPosition.top} color="bg-secondary/10 text-secondary" />
+                    )}
+                    {notesByPosition.middle.length > 0 && (
+                      <NoteGroup label="Heart" notes={notesByPosition.middle} color="bg-primary/8 text-primary/70" />
+                    )}
+                    {notesByPosition.base.length > 0 && (
+                      <NoteGroup label="Base" notes={notesByPosition.base} color="bg-tertiary text-primary/60" />
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {notes.map((n) => (
+                      <span key={n.note_id} className="text-xs px-3 py-1 rounded-full font-medium note-pill-depth bg-secondary/10 text-secondary">
+                        {n.note_name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -280,6 +280,56 @@ export async function deleteFragrance(id: string): Promise<void> {
   }
 }
 
+// Concentrations
+
+export interface Concentration {
+  id: string;
+  name: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export async function getConcentrations(): Promise<Concentration[]> {
+  const response = await fetch('/api/admin/concentrations', { cache: 'no-store' });
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) throw new Error('Unauthorized');
+    throw new Error('Failed to fetch concentrations');
+  }
+
+  const data: ApiResponse<Concentration> = await response.json();
+  if (!data.ok) throw new Error(data.error || 'Failed to fetch concentrations');
+  return data.items || [];
+}
+
+export async function createConcentration(name: string): Promise<Concentration> {
+  const response = await fetch('/api/admin/concentrations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) throw new Error('Unauthorized');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to create concentration');
+  }
+
+  const data: ApiResponse<Concentration> = await response.json();
+  if (!data.ok || !data.item) throw new Error(data.error || 'Failed to create concentration');
+  return data.item;
+}
+
+export async function deleteConcentration(id: string): Promise<void> {
+  const response = await fetch(`/api/admin/concentrations/${id}`, { method: 'DELETE' });
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) throw new Error('Unauthorized');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to delete concentration');
+  }
+}
+
 // Notes
 
 export async function searchNotes(query?: string): Promise<FragranceNote[]> {

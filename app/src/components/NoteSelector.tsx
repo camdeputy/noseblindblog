@@ -8,6 +8,7 @@ import { FragranceNote, NoteAssignment } from '@/types/fragrance';
 interface NoteSelectorProps {
   notes: NoteAssignment[];
   onChange: (notes: NoteAssignment[]) => void;
+  uncategorized?: boolean;
 }
 
 const POSITIONS = ['top', 'middle', 'base'] as const;
@@ -17,7 +18,25 @@ const POSITION_LABELS: Record<string, string> = {
   base: 'Base Notes',
 };
 
-export default function NoteSelector({ notes, onChange }: NoteSelectorProps) {
+export default function NoteSelector({ notes, onChange, uncategorized = false }: NoteSelectorProps) {
+  if (uncategorized) {
+    return (
+      <div>
+        <NotePositionSection
+          position="top"
+          label="Notes"
+          notes={notes}
+          onAdd={(note) => {
+            onChange([...notes, { ...note, position: 'top', sort_order: notes.length }]);
+          }}
+          onRemove={(noteId, noteName) => {
+            onChange(notes.filter((n) => !(n.note_id === noteId || n.note_name === noteName)));
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {POSITIONS.map((position) => (

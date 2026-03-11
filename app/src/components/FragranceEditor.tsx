@@ -8,7 +8,7 @@ import Textarea from '@/components/ui/Textarea';
 import Select from '@/components/ui/Select';
 import NoteSelector from '@/components/NoteSelector';
 import ImageUploader, { ImageRecord } from '@/components/ImageUploader';
-import { createFragrance, updateFragrance, deleteFragrance, getFragrance, getAdminHouses, getAdminPosts } from '@/lib/api';
+import { createFragrance, updateFragrance, deleteFragrance, getFragrance, getAdminHouses, getAdminPosts, getConcentrations, Concentration } from '@/lib/api';
 import { FragranceHouse, Fragrance, NoteAssignment } from '@/types/fragrance';
 import { Post } from '@/types/post';
 
@@ -25,6 +25,7 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
   // Dropdown data
   const [houses, setHouses] = useState<FragranceHouse[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [concentrations, setConcentrations] = useState<Concentration[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   // Form fields
@@ -36,9 +37,11 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
   const [priceCents, setPriceCents] = useState(fragrance?.price_cents != null ? String(fragrance.price_cents) : '');
   const [currency, setCurrency] = useState(fragrance?.currency ?? 'USD');
   const [sizeMl, setSizeMl] = useState(fragrance?.size_ml != null ? String(fragrance.size_ml) : '');
+  const [concentration, setConcentration] = useState(fragrance?.concentration ?? '');
   const [fragranceUrl, setFragranceUrl] = useState(fragrance?.fragrance_url ?? '');
   const [reviewPostId, setReviewPostId] = useState(fragrance?.review_post_id ?? '');
   const [notes, setNotes] = useState<NoteAssignment[]>([]);
+  const [notesCategorized, setNotesCategorized] = useState(fragrance?.notes_categorized ?? true);
   const [images, setImages] = useState<ImageRecord[]>([]);
 
   // Slug auto-generation helper
@@ -48,6 +51,12 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
       .replace(/[^a-z0-9\s-]/g, '')
       .trim()
       .replace(/\s+/g, '-');
+  }
+
+  function buildAutoSlug(fragName: string, conc: string) {
+    const base = toSlug(fragName);
+    const suffix = toSlug(conc);
+    return suffix ? `${base}-${suffix}` : base;
   }
 
   // Form state
@@ -62,6 +71,7 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
         const promises: Promise<unknown>[] = [
           getAdminHouses(),
           getAdminPosts().catch(() => [] as Post[]),
+          getConcentrations().catch(() => [] as Concentration[]),
         ];
         // If editing, also fetch the full fragrance with notes and images
         if (isEdit && fragrance) {
@@ -76,13 +86,14 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
         const results = await Promise.all(promises);
         setHouses(results[0] as FragranceHouse[]);
         setPosts(results[1] as Post[]);
+        setConcentrations(results[2] as Concentration[]);
 
-        if (isEdit && results[2]) {
-          const full = results[2] as { notes: NoteAssignment[] };
+        if (isEdit && results[3]) {
+          const full = results[3] as { notes: NoteAssignment[] };
           setNotes(full.notes || []);
         }
-        if (isEdit && results[3]) {
-          setImages(results[3] as ImageRecord[]);
+        if (isEdit && results[4]) {
+          setImages(results[4] as ImageRecord[]);
         }
       } catch (err) {
         console.error('Failed to load form data:', err);
@@ -132,8 +143,10 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
         price_cents: priceNum,
         currency: currency.trim() || undefined,
         size_ml: sizeMlNum,
+        concentration: concentration.trim() || undefined,
         fragrance_url: fragranceUrl.trim() || undefined,
         review_post_id: reviewPostId || null,
+        notes_categorized: notesCategorized,
         notes: notes.length > 0 ? notes : undefined,
       };
 
@@ -210,7 +223,7 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
             value={name}
             onChange={(e) => {
               setName(e.target.value);
-              if (!isEdit) setSlug(toSlug(e.target.value));
+              if (!isEdit) setSlug(buildAutoSlug(e.target.value, concentration));
             }}
             placeholder="e.g. Baccarat Rouge 540"
             required
@@ -279,6 +292,22 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
           />
         </div>
 
+        {/* Concentration */}
+        <Select
+          label="Concentration"
+          value={concentration}
+          onChange={(e) => {
+            setConcentration(e.target.value);
+            if (!isEdit) setSlug(buildAutoSlug(name, e.target.value));
+          }}
+          disabled={busy}
+        >
+          <option value="">-- None / Unknown --</option>
+          {concentrations.map((c) => (
+            <option key={c.id} value={c.name}>{c.name}</option>
+          ))}
+        </Select>
+
         {/* URLs row */}
         <Input
           label="Fragrance URL"
@@ -306,8 +335,36 @@ export default function FragranceEditor({ mode = 'create', fragrance, onSuccess,
 
         {/* Notes */}
         <div className="border-t border-gray-200 pt-4 mt-4">
-          <h4 className="text-sm font-semibold text-primary mb-4">Fragrance Notes</h4>
-          <NoteSelector notes={notes} onChange={setNotes} />
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-sm font-semibold text-primary">Fragrance Notes</h4>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <span className="text-xs text-primary/60">Categorized (top / middle / base)</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={notesCategorized}
+                disabled={busy}
+                onClick={() => {
+                  const next = !notesCategorized;
+                  setNotesCategorized(next);
+                  // Flatten all notes to 'top' when switching to uncategorized
+                  if (!next) {
+                    setNotes(notes.map((n) => ({ ...n, position: 'top' })));
+                  }
+                }}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                  notesCategorized ? 'bg-secondary' : 'bg-gray-300'
+                } disabled:opacity-50`}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                    notesCategorized ? 'translate-x-4.5' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
+            </label>
+          </div>
+          <NoteSelector notes={notes} onChange={setNotes} uncategorized={!notesCategorized} />
         </div>
 
         {/* Images — only available when editing an existing fragrance */}
