@@ -115,7 +115,7 @@ function applySecurityHeaders(
   return response;
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const csp = buildCSP(nonce);
 
