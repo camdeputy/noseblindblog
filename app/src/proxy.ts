@@ -72,6 +72,7 @@ function buildCSP(nonce: string): string {
     `default-src 'self'`,
     // unsafe-eval required in dev for React Fast Refresh; never present in production
     // va.vercel-scripts.com serves the Speed Insights script in production
+    // strict-dynamic intentionally absent — it disabled 'self', blocking same-origin Vercel Analytics scripts
     `script-src 'nonce-${nonce}' 'self' https://va.vercel-scripts.com${isDev ? ` 'unsafe-eval'` : ''}`,
     // unsafe-inline needed for Next.js critical CSS and inline style= attributes
     `style-src 'self' 'unsafe-inline'`,

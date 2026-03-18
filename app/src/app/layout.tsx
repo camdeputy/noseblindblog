@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { Cormorant_Garamond, Source_Sans_3 } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -40,11 +41,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Reading headers opts this layout into dynamic rendering on every request.
+  // This ensures the per-request CSP nonce from proxy.ts matches the nonce
+  // embedded in the rendered HTML. Without this, revalidate on edge runtime
+  // pages can cause cached HTML (with a stale nonce) to be served while
+  // the proxy issues a fresh nonce in the CSP header — blocking all scripts.
+  await headers();
+
   return (
     <html lang="en" className={`${cormorant.variable} ${sourceSans.variable}`}>
       <body className="min-h-screen flex flex-col bg-white">
