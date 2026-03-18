@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, Clock } from 'lucide-react';
@@ -74,6 +75,7 @@ export async function generateStaticParams() {
 
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   let post;
   try {
@@ -101,6 +103,7 @@ export default async function PostPage({ params }: PostPageProps) {
   return (
     <article className="max-w-3xl mx-auto px-4 py-12">
       <script
+        nonce={nonce}
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }}
       />

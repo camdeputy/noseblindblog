@@ -5,8 +5,6 @@ import type { Metadata } from 'next';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { siteUrl } from '@/lib/siteConfig';
 
-export const revalidate = 300;
-
 type HouseDetail = {
   id: string;
   name: string;

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { siteUrl, siteName, siteDescription } from '@/lib/siteConfig';
@@ -21,9 +22,9 @@ export const metadata: Metadata = {
 };
 
 export const runtime = 'edge';
-export const revalidate = 300;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -35,6 +36,7 @@ export default function HomePage() {
   return (
     <div className="bg-tertiary/30">
       <script
+        nonce={nonce}
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />

@@ -9,7 +9,6 @@ import { siteUrl } from '@/lib/siteConfig';
 import ScentLibraryLoading from './loading';
 
 export const runtime = 'edge';
-export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: 'Scent Library',

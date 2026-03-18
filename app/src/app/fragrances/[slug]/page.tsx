@@ -2,12 +2,10 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { getPosts } from '@/lib/api';
 import { siteUrl } from '@/lib/siteConfig';
-
-// Cache each fragrance page for 5 minutes; rebuild on next request after expiry
-export const revalidate = 300;
 
 export async function generateMetadata({
   params,
@@ -163,6 +161,7 @@ export default async function FragrancePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   const fragrance = await getFragranceBySlug(slug);
   if (!fragrance) notFound();
@@ -220,6 +219,7 @@ export default async function FragrancePage({
   return (
     <div className="min-h-screen bg-tertiary/30">
       <script
+        nonce={nonce}
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />

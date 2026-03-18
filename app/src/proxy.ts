@@ -112,6 +112,12 @@ function applySecurityHeaders(
 
   if (pathname.startsWith('/api/')) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  } else {
+    // Never let cached HTML outlive the nonce embedded in its inline scripts.
+    response.headers.set(
+      'Cache-Control',
+      'private, no-store, no-cache, max-age=0, must-revalidate',
+    );
   }
 
   return response;
@@ -145,6 +151,7 @@ export async function proxy(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set('Content-Security-Policy', csp);
 
   const response = NextResponse.next({
     request: { headers: requestHeaders },
@@ -167,5 +174,13 @@ function redirectToLogin(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon\\.ico).*)'],
+  matcher: [
+    {
+      source: '/((?!_next/static|_next/image|favicon\\.ico).*)',
+      missing: [
+        { type: 'header', key: 'next-router-prefetch' },
+        { type: 'header', key: 'purpose', value: 'prefetch' },
+      ],
+    },
+  ],
 };
