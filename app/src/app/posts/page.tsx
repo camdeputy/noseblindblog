@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getPosts } from '@/lib/api';
 import { Post } from '@/types/post';
 
+export const runtime = 'edge';
 export const revalidate = 300;
 
 import { siteUrl } from '@/lib/siteConfig';

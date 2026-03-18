@@ -159,61 +159,40 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
     : !isSearchLoading && displayedHouses.length === 0;
 
   return (
-    <div className="min-h-screen bg-tertiary/30">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        {/* Radial depth gradient */}
-        <div className="absolute inset-0 pointer-events-none" style={{background: 'radial-gradient(ellipse 80% 55% at 50% 42%, rgba(244,191,219,0.22) 0%, transparent 68%)'}} aria-hidden="true" />
-        <div className="hidden sm:contents">
-          <StarSticker className="absolute top-12 left-[8%] w-6 h-6" />
-          <StarSticker className="absolute top-20 left-[12%] w-4 h-4" />
-          <StarSticker className="absolute top-16 right-[10%] w-5 h-5" />
-          <StarSticker className="absolute top-28 right-[15%] w-3 h-3" />
-          <FloralAccent className="absolute top-4 right-[5%] w-24 h-24 opacity-50" />
-          <FloralAccent className="absolute bottom-0 left-[3%] w-20 h-20 opacity-30 -rotate-12" />
+    <>
+      {/* Search Bar */}
+      <div className="max-w-5xl mx-auto px-6 pb-10 sm:pb-12 text-center">
+        <div className="max-w-md mx-auto relative">
+          <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/30 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => {
+              const now = Date.now();
+              const interval = now - lastKeystrokeRef.current;
+              lastKeystrokeRef.current = now;
+              // Fast typing (small interval) → long delay; slow / deliberate pause → short delay
+              debounceDelayRef.current = Math.max(
+                DEBOUNCE_MIN_MS,
+                Math.min(DEBOUNCE_MAX_MS, DEBOUNCE_MAX_MS - interval),
+              );
+              const value = normalizeSearchInput(e.target.value);
+              setSearchQuery(value);
+              if (value.trim()) setSelectedFilter(null);
+            }}
+            placeholder="Search houses or fragrances..."
+            className="w-full pl-10 pr-10 py-3 bg-white/70 border border-secondary/20 rounded-full text-primary placeholder:text-primary/30 focus:outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary/40 text-sm transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/30 hover:text-primary/60 transition-colors"
+            >
+              <XIcon className="w-4 h-4" />
+            </button>
+          )}
         </div>
-
-        <div className="relative max-w-5xl mx-auto px-6 py-10 sm:py-16 text-center">
-          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold text-primary leading-tight mb-6">
-            Scent <span className="text-secondary">Library</span>
-          </h1>
-          <p className="text-primary/60 max-w-xl mx-auto text-base sm:text-lg leading-relaxed mb-8">
-            Explore and discover your favorite fragrance houses
-          </p>
-
-          {/* Search Bar */}
-          <div className="max-w-md mx-auto relative">
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/30 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                const now = Date.now();
-                const interval = now - lastKeystrokeRef.current;
-                lastKeystrokeRef.current = now;
-                // Fast typing (small interval) → long delay; slow / deliberate pause → short delay
-                debounceDelayRef.current = Math.max(
-                  DEBOUNCE_MIN_MS,
-                  Math.min(DEBOUNCE_MAX_MS, DEBOUNCE_MAX_MS - interval),
-                );
-                const value = normalizeSearchInput(e.target.value);
-                setSearchQuery(value);
-                if (value.trim()) setSelectedFilter(null);
-              }}
-              placeholder="Search houses or fragrances..."
-              className="w-full pl-10 pr-10 py-3 bg-white/70 border border-secondary/20 rounded-full text-primary placeholder:text-primary/30 focus:outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary/40 text-sm transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/30 hover:text-primary/60 transition-colors"
-              >
-                <XIcon className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* Alphabet Filter — hidden while searching */}
       {!isSearching && (
@@ -340,7 +319,7 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
           </>
         )}
       </section>
-    </div>
+    </>
   );
 }
 
@@ -427,37 +406,37 @@ function HouseRow({ house, isReversed, index }: HouseRowProps) {
                     )}
                   </div>
                   <div className="flex-1 flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <h4 className="font-display text-lg font-semibold text-primary group-hover:text-secondary transition-colors">
-                      {fragrance.name}
-                    </h4>
-                    {(fragrance.concentration || fragrance.size_ml || fragrance.review_post_id) && (
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        {fragrance.concentration && (
-                          <span className="text-xs text-secondary/70 font-medium">{fragrance.concentration}</span>
-                        )}
-                        {fragrance.size_ml && (
-                          <span className="text-xs text-primary/40">{fragrance.size_ml} ml</span>
-                        )}
-                        {fragrance.review_post_id && (
-                          <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">
-                            Reviewed
-                          </span>
-                        )}
+                    <div className="flex-1">
+                      <h4 className="font-display text-lg font-semibold text-primary group-hover:text-secondary transition-colors">
+                        {fragrance.name}
+                      </h4>
+                      {(fragrance.concentration || fragrance.size_ml || fragrance.review_post_id) && (
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {fragrance.concentration && (
+                            <span className="text-xs text-secondary/70 font-medium">{fragrance.concentration}</span>
+                          )}
+                          {fragrance.size_ml && (
+                            <span className="text-xs text-primary/40">{fragrance.size_ml} ml</span>
+                          )}
+                          {fragrance.review_post_id && (
+                            <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">
+                              Reviewed
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {fragrance.description && (
+                        <p className="text-sm text-primary/50 mt-1 line-clamp-2">
+                          {fragrance.description}
+                        </p>
+                      )}
+                    </div>
+                    {fragrance.rating && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        <StarIcon className="w-4 h-4 text-secondary" filled />
+                        <span className="text-sm font-medium text-primary">{fragrance.rating}</span>
                       </div>
                     )}
-                    {fragrance.description && (
-                      <p className="text-sm text-primary/50 mt-1 line-clamp-2">
-                        {fragrance.description}
-                      </p>
-                    )}
-                  </div>
-                  {fragrance.rating && (
-                    <div className="flex items-center gap-1 shrink-0">
-                      <StarIcon className="w-4 h-4 text-secondary" filled />
-                      <span className="text-sm font-medium text-primary">{fragrance.rating}</span>
-                    </div>
-                  )}
                   </div>
                 </div>
                 <span className="inline-flex items-center gap-1 text-xs text-secondary mt-3 group-hover:gap-2 transition-all">
@@ -616,20 +595,6 @@ function InlineHouseRowSkeleton({ isReversed }: { isReversed: boolean }) {
 
 // ── SVG Components ────────────────────────────────────────────────────────────
 
-const StarSticker = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 40 40" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 0L24 16L40 20L24 24L20 40L16 24L0 20L16 16L20 0Z" fill="#B27092" opacity="0.5" />
-  </svg>
-);
-
-const FloralAccent = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="50" cy="50" r="45" stroke="#C9CBA3" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
-    <circle cx="50" cy="50" r="30" stroke="#B27092" strokeWidth="1" opacity="0.4" />
-    <path d="M50 20V80" stroke="#C9CBA3" strokeWidth="1" opacity="0.3" />
-    <path d="M20 50H80" stroke="#C9CBA3" strokeWidth="1" opacity="0.3" />
-  </svg>
-);
 
 const RecentStarIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">

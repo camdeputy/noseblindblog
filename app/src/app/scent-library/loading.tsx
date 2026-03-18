@@ -1,14 +1,13 @@
+// Shown while ScentLibraryData resolves — the hero heading is already
+// visible above this (streamed immediately from the server), so we only
+// need to skeleton the search bar, filter bar, and house rows.
 export default function ScentLibraryLoading() {
   return (
-    <div className="min-h-screen bg-tertiary/30">
-      {/* Hero skeleton */}
-      <section className="relative overflow-hidden">
-        <div className="max-w-5xl mx-auto px-6 py-10 sm:py-16 text-center">
-          <div className="h-10 sm:h-14 md:h-16 w-52 sm:w-64 bg-tertiary/60 rounded-lg animate-pulse mx-auto mb-6" />
-          <div className="h-5 w-64 sm:w-80 bg-tertiary/40 rounded animate-pulse mx-auto mb-8" />
-          <div className="max-w-md mx-auto h-12 bg-tertiary/40 rounded-full animate-pulse" />
-        </div>
-      </section>
+    <>
+      {/* Search bar skeleton */}
+      <div className="max-w-5xl mx-auto px-6 pb-10 sm:pb-12 text-center">
+        <div className="max-w-md mx-auto h-12 bg-tertiary/40 rounded-full animate-pulse" />
+      </div>
 
       {/* Filter bar skeleton */}
       <section className="border-y border-secondary/10 bg-tertiary/80">
@@ -33,7 +32,7 @@ export default function ScentLibraryLoading() {
           ))}
         </div>
       </section>
-    </div>
+    </>
   );
 }
 

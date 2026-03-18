@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { createServerSupabase } from '@/lib/supabase/server';
 import ScentLibraryClient, {
   type HouseWithFragrances,
   type FragranceWithHouseName,
 } from './ScentLibraryClient';
 import { siteUrl } from '@/lib/siteConfig';
+import ScentLibraryLoading from './loading';
 
+export const runtime = 'edge';
 export const revalidate = 300;
 
 export const metadata: Metadata = {
@@ -26,13 +29,42 @@ export const metadata: Metadata = {
 
 const PAGE_SIZE = 8;
 
-export default async function ScentLibraryPage() {
+// Static shell — streams to the browser immediately, no data dependency
+export default function ScentLibraryPage() {
+  return (
+    <div className="min-h-screen bg-tertiary/30">
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 55% at 50% 42%, rgba(244,191,219,0.22) 0%, transparent 68%)' }} aria-hidden="true" />
+        <div className="hidden sm:contents">
+          <StarSticker className="absolute top-12 left-[8%] w-6 h-6" />
+          <StarSticker className="absolute top-20 left-[12%] w-4 h-4" />
+          <StarSticker className="absolute top-16 right-[10%] w-5 h-5" />
+          <StarSticker className="absolute top-28 right-[15%] w-3 h-3" />
+          <FloralAccent className="absolute top-4 right-[5%] w-24 h-24 opacity-50" />
+          <FloralAccent className="absolute bottom-0 left-[3%] w-20 h-20 opacity-30 -rotate-12" />
+        </div>
+        <div className="relative max-w-5xl mx-auto px-6 pt-10 sm:pt-16 pb-6 text-center">
+          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold text-primary leading-tight mb-6">
+            Scent <span className="text-secondary">Library</span>
+          </h1>
+          <p className="text-primary/60 max-w-xl mx-auto text-base sm:text-lg leading-relaxed">
+            Explore and discover your favorite fragrance houses
+          </p>
+        </div>
+      </section>
+
+      {/* Search bar + filter + house list — skeleton shown while Supabase resolves */}
+      <Suspense fallback={<ScentLibraryLoading />}>
+        <ScentLibraryData />
+      </Suspense>
+    </div>
+  );
+}
+
+// Async data loader — runs after the static shell is already streaming
+async function ScentLibraryData() {
   const supabase = createServerSupabase();
 
-  // Three parallel fetches:
-  // 1. All house names/ids — lightweight, needed for alphabet filter letters
-  // 2. First page of full house data — what renders immediately
-  // 3. 5 most recent fragrances — for the "recently added" view
   const [
     { data: allHousesData },
     { data: firstPageHouses, count },
@@ -47,7 +79,6 @@ export default async function ScentLibraryPage() {
   const houses = firstPageHouses ?? [];
   const total = count ?? 0;
 
-  // Fetch fragrances only for the first-page houses (sequential, depends on house IDs above)
   const houseIds = houses.map((h) => h.id);
   const { data: fragrancesData } = houseIds.length > 0
     ? await supabase.from('fragrances').select('*').in('house_id', houseIds).order('created_at', { ascending: false })
@@ -55,7 +86,6 @@ export default async function ScentLibraryPage() {
 
   const fragrances = fragrancesData ?? [];
 
-  // Batch-fetch primary images for houses and fragrances in parallel
   const allFragIds = [
     ...fragrances.map((f) => f.id),
     ...(recentFragData ?? []).map((f) => f.id),
@@ -73,7 +103,6 @@ export default async function ScentLibraryPage() {
   const houseImageMap = new Map((houseImgData ?? []).map((i) => [i.house_id, i.url]));
   const fragImageMap = new Map((fragImgData ?? []).map((i) => [i.fragrance_id, i.url]));
 
-  // Available letters derived from ALL houses, not just the first page
   const availableLetters = [
     ...new Set(
       allHouses
@@ -114,3 +143,18 @@ export default async function ScentLibraryPage() {
     />
   );
 }
+
+const StarSticker = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 40 40" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 0L24 16L40 20L24 24L20 40L16 24L0 20L16 16L20 0Z" fill="#B27092" opacity="0.5" />
+  </svg>
+);
+
+const FloralAccent = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="45" stroke="#C9CBA3" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+    <circle cx="50" cy="50" r="30" stroke="#B27092" strokeWidth="1" opacity="0.4" />
+    <path d="M50 20V80" stroke="#C9CBA3" strokeWidth="1" opacity="0.3" />
+    <path d="M20 50H80" stroke="#C9CBA3" strokeWidth="1" opacity="0.3" />
+  </svg>
+);
