@@ -71,12 +71,13 @@ function buildCSP(nonce: string): string {
   return [
     `default-src 'self'`,
     // unsafe-eval required in dev for React Fast Refresh; never present in production
-    `script-src 'nonce-${nonce}' 'strict-dynamic' 'self'${isDev ? ` 'unsafe-eval'` : ''}`,
+    // va.vercel-scripts.com serves the Speed Insights script in production
+    `script-src 'nonce-${nonce}' 'self' https://va.vercel-scripts.com${isDev ? ` 'unsafe-eval'` : ''}`,
     // unsafe-inline needed for Next.js critical CSS and inline style= attributes
     `style-src 'self' 'unsafe-inline'`,
     `font-src 'self'`,
     `img-src 'self'${mediaOrigin ? ` ${mediaOrigin}` : ''}`,
-    `connect-src 'self' https://cm6xvdr4ja.execute-api.us-west-1.amazonaws.com https://vitals.vercel-insights.com${s3UploadOrigin ? ` ${s3UploadOrigin}` : ''}`,
+    `connect-src 'self' https://cm6xvdr4ja.execute-api.us-west-1.amazonaws.com https://vitals.vercel-insights.com https://va.vercel-scripts.com${s3UploadOrigin ? ` ${s3UploadOrigin}` : ''}`,
     `frame-src 'none'`,
     `object-src 'none'`,
     `base-uri 'self'`,
