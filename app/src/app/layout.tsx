@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { Cormorant_Garamond, Source_Sans_3 } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import CookieConsentBanner from '@/components/CookieConsentBanner';
 import { siteName, siteDescription, siteUrl } from '@/lib/siteConfig';
 import './globals.css';
 
@@ -42,17 +40,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const nonce = (await headers()).get('x-nonce') ?? undefined;
-
   return (
     <html lang="en" className={`${cormorant.variable} ${sourceSans.variable}`}>
       <body className="min-h-screen flex flex-col bg-white">
-        <CookieConsentBanner nonce={nonce} />
         <Header />
         <main className="grow">{children}</main>
         <Footer />

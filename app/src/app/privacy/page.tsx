@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'Privacy policy for Noseblind.',
 };
 
-const EFFECTIVE_DATE = 'March 4, 2026';
+const EFFECTIVE_DATE = 'March 18, 2026';
 
 export default function PrivacyPage() {
   return (
@@ -58,27 +58,25 @@ export default function PrivacyPage() {
           traffic patterns and identify performance issues.
         </p>
         <p className="mt-4">
-          We also use <strong>Google Analytics 4</strong> (GA4), a web analytics service provided
-          by Google LLC. When you visit this site and have accepted cookies, GA4 automatically
-          collects:
-        </p>
-        <ul className="list-disc list-inside mt-3 space-y-1 text-primary/80">
-          <li>Pages visited and time spent on each page</li>
-          <li>Referring website or search query that brought you here</li>
-          <li>General geographic location (country and city, derived from IP address)</li>
-          <li>Browser type, operating system, and device category</li>
-          <li>A randomly assigned, anonymized identifier stored in a cookie</li>
-        </ul>
-        <p className="mt-4">
-          GA4 data is aggregated and used solely to understand how visitors interact with the site.
-          We do not use it to identify individual people. GA4 is only loaded after you accept
-          cookies via the cookie consent banner.
-        </p>
-        <p className="mt-4">
           For security purposes, your IP address is temporarily processed when you submit a request
           to our login endpoint. This is used solely to enforce rate limiting and protect the site
           against automated login attempts. Your IP address is not linked to any browsing activity
           or content you view on the Site.
+        </p>
+      </Section>
+
+      <Section title="Cookies">
+        <p>
+          This Site does not use tracking or analytics cookies. No cookies are placed in your
+          browser for advertising, retargeting, or identification purposes.
+        </p>
+        <p className="mt-4">
+          Vercel Analytics and Speed Insights are cookieless and do not require consent under the
+          ePrivacy Directive.
+        </p>
+        <p className="mt-4">
+          A session cookie is used solely for the admin area of this Site and is never set for
+          ordinary visitors.
         </p>
       </Section>
 
@@ -90,58 +88,17 @@ export default function PrivacyPage() {
         </p>
         <ul className="list-disc list-inside mt-3 space-y-3 text-primary/80">
           <li>
-            <strong>Legitimate Interests (Article 6(1)(f))</strong> — We use Google Analytics to
+            <strong>Legitimate Interests (Article 6(1)(f))</strong> — We use Vercel Analytics to
             understand how visitors use the Site, identify technical issues, and improve content.
-            We have assessed that this use does not override your rights and freedoms, as the data
-            is aggregated and anonymized. You have the right to object to this processing at any
-            time (see "Your GDPR Rights" below).
+            As these tools are cookieless and do not retain IP addresses or create individual
+            profiles, we have assessed that this use does not override your rights and freedoms.
+            You have the right to object to this processing at any time (see "Your GDPR Rights"
+            below).
           </li>
           <li>
             <strong>Contract Performance (Article 6(1)(b))</strong> — When you submit the contact
             form, we process the information you provide in order to respond to your inquiry.
           </li>
-        </ul>
-      </Section>
-
-      <Section title="Cookies">
-        <p>
-          GA4 places first-party cookies in your browser to distinguish sessions and measure
-          returning visits. These cookies do not contain your name, email, or any directly
-          identifying information. Cookie names used by GA4 typically include{' '}
-          <code className="text-sm bg-tertiary/60 px-1 rounded">_ga</code>,{' '}
-          <code className="text-sm bg-tertiary/60 px-1 rounded">_ga_*</code>, and{' '}
-          <code className="text-sm bg-tertiary/60 px-1 rounded">_gid</code>.
-        </p>
-        <p className="mt-4">
-          Vercel Analytics and Speed Insights do not use cookies and therefore fall outside the
-          scope of the ePrivacy Directive's cookie consent requirement. They are loaded on every
-          page visit regardless of your cookie preference.
-        </p>
-        <p className="mt-4">
-          <strong>EU/EEA visitors:</strong> Under the GDPR and the ePrivacy Directive, analytics
-          cookies are considered non-essential and, in many EU member states, require your prior
-          consent before being placed. We process GA4 analytics data under our legitimate interests
-          as described above. Vercel's cookieless analytics are processed under legitimate interests
-          as well. You have the right to object to this processing at any time by contacting us
-          directly.
-        </p>
-        <p className="mt-4">
-          You can opt out of GA4 tracking at any time by:
-        </p>
-        <ul className="list-disc list-inside mt-2 space-y-1 text-primary/80">
-          <li>
-            Installing the{' '}
-            <a
-              href="https://tools.google.com/dlpage/gaoptout"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-secondary underline hover:text-primary transition-colors"
-            >
-              Google Analytics Opt-out Browser Add-on
-            </a>
-          </li>
-          <li>Disabling cookies in your browser settings</li>
-          <li>Using your browser's private / incognito mode</li>
         </ul>
       </Section>
 
@@ -177,24 +134,6 @@ export default function PrivacyPage() {
               className="text-secondary underline hover:text-primary transition-colors"
             >
               vercel.com/legal/privacy-policy
-            </a>
-            .
-          </li>
-          <li>
-            <strong>Google LLC</strong> — processes GA4 analytics data on our behalf, loaded only
-            after cookie consent is granted. Google may transfer and store this data on servers in
-            the United States and other countries outside the EU/EEA. For transfers from the
-            EU/EEA to the United States, Google relies on the{' '}
-            <strong>EU–US Data Privacy Framework</strong> and{' '}
-            <strong>Standard Contractual Clauses</strong> as approved transfer mechanisms under
-            GDPR Article 46. Google's privacy policy is available at{' '}
-            <a
-              href="https://policies.google.com/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-secondary underline hover:text-primary transition-colors"
-            >
-              policies.google.com/privacy
             </a>
             .
           </li>
@@ -253,17 +192,6 @@ export default function PrivacyPage() {
             <strong>Right to Erasure / "Right to Be Forgotten" (Article 17)</strong> — You may
             request deletion of your personal data where there is no compelling reason for its
             continued processing. Contact form data is not retained by us beyond email delivery.
-            Analytics data held by Google is subject to Google's own retention and deletion
-            policies; you may use Google's data deletion tools at{' '}
-            <a
-              href="https://myaccount.google.com/data-and-privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-secondary underline hover:text-primary transition-colors"
-            >
-              myaccount.google.com/data-and-privacy
-            </a>
-            .
           </li>
           <li>
             <strong>Right to Restriction of Processing (Article 18)</strong> — You may request
@@ -277,8 +205,7 @@ export default function PrivacyPage() {
           <li>
             <strong>Right to Object (Article 21)</strong> — You have the right to object at any
             time to processing of your personal data based on our legitimate interests, including
-            analytics tracking. To exercise this right, use the opt-out methods described in the
-            Cookies section above, or contact us directly.
+            analytics tracking. To exercise this right, contact us directly.
           </li>
           <li>
             <strong>Right Not to Be Subject to Automated Decision-Making (Article 22)</strong> —
@@ -326,8 +253,7 @@ export default function PrivacyPage() {
           <li>
             <strong>Right to Delete</strong> — You may request deletion of personal information
             we have collected. Contact form submissions are not retained by us beyond email
-            delivery. Analytics data held by Google is subject to Google's own retention and
-            deletion policies.
+            delivery.
           </li>
           <li>
             <strong>Right to Opt Out of Sale</strong> — We do not sell personal information.
@@ -338,29 +264,10 @@ export default function PrivacyPage() {
             not affect your access to this site.
           </li>
         </ul>
-        <p className="mt-4">
-          To exercise your rights, you may opt out of analytics tracking using the Google
-          Analytics Opt-out Add-on linked in the Cookies section above. Google's data deletion
-          tools are available at{' '}
-          <a
-            href="https://myaccount.google.com/data-and-privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-secondary underline hover:text-primary transition-colors"
-          >
-            myaccount.google.com/data-and-privacy
-          </a>
-          .
-        </p>
       </Section>
 
       <Section title="Data Retention">
         <p>
-          Analytics data in GA4 is retained for 14 months by default, after which it is
-          automatically deleted by Google. We do not store analytics data independently on our
-          own servers.
-        </p>
-        <p className="mt-4">
           Contact form messages are received directly in our inbox and are retained only as long
           as reasonably necessary to respond to your inquiry. We do not store them in any separate
           database.
