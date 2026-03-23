@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { createAdminSupabase } from "@/lib/supabase/admin";
 import { NoteAssignment } from "@/types/fragrance";
+import { enforceRateLimit } from "@/lib/rateLimit";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const rateLimitResponse = await enforceRateLimit(request, "admin_read");
+  if (rateLimitResponse) return rateLimitResponse;
+
   const { id } = await params;
   const supabase = createAdminSupabase();
 
@@ -41,6 +45,9 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const rateLimitResponse = await enforceRateLimit(request, "admin_write");
+  if (rateLimitResponse) return rateLimitResponse;
+
   const { id } = await params;
   const supabase = createAdminSupabase();
 
@@ -179,9 +186,12 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const rateLimitResponse = await enforceRateLimit(request, "admin_write");
+  if (rateLimitResponse) return rateLimitResponse;
+
   const { id } = await params;
   const supabase = createAdminSupabase();
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { enforceRateLimit } from "@/lib/rateLimit";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -11,9 +12,12 @@ type NoteRow = {
 };
 
 export async function GET(
-  _req: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const rateLimitResponse = await enforceRateLimit(request, "public_read");
+  if (rateLimitResponse) return rateLimitResponse;
+
   const { id } = await params;
 
   if (!UUID_RE.test(id)) {

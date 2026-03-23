@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { signedFetch } from '@/lib/aws/signedFetch';
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 const AWS_API_URL = process.env.AWS_API_URL ?? '';
 
@@ -8,6 +9,9 @@ interface RouteParams {
 }
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
+  const rateLimitResponse = await enforceRateLimit(_request, 'admin_read');
+  if (rateLimitResponse) return rateLimitResponse;
+
   const { slug } = await params;
 
   if (!AWS_API_URL) {
@@ -25,6 +29,9 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 }
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
+  const rateLimitResponse = await enforceRateLimit(request, 'admin_write');
+  if (rateLimitResponse) return rateLimitResponse;
+
   const { slug } = await params;
 
   if (!AWS_API_URL) {
@@ -46,6 +53,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+  const rateLimitResponse = await enforceRateLimit(_request, 'admin_write');
+  if (rateLimitResponse) return rateLimitResponse;
+
   const { slug } = await params;
 
   if (!AWS_API_URL) {

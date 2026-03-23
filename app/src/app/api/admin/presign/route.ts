@@ -3,10 +3,14 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
 import { getS3Client } from '@/lib/s3';
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
 export async function POST(req: NextRequest) {
+    const rateLimitResponse = await enforceRateLimit(req, 'presign');
+    if (rateLimitResponse) return rateLimitResponse;
+
     const maxSizeMb = parseInt(process.env.MEDIA_MAX_UPLOAD_SIZE_MB ?? '10', 10);
     const maxSizeBytes = maxSizeMb * 1024 * 1024;
 

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { signedFetch } from '@/lib/aws/signedFetch';
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 const AWS_API_URL = process.env.AWS_API_URL ?? '';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const rateLimitResponse = await enforceRateLimit(request, 'admin_read');
+  if (rateLimitResponse) return rateLimitResponse;
+
   if (!AWS_API_URL) {
     return NextResponse.json({ ok: false, error: 'Server configuration error' }, { status: 500 });
   }
@@ -19,6 +23,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = await enforceRateLimit(request, 'admin_write');
+  if (rateLimitResponse) return rateLimitResponse;
+
   if (!AWS_API_URL) {
     return NextResponse.json({ ok: false, error: 'Server configuration error' }, { status: 500 });
   }

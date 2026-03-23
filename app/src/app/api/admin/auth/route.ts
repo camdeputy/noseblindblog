@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
-
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(5, '15 m'),
-  prefix: 'admin_auth',
-});
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 const SESSION_COOKIE_NAME = 'admin_session';
 const SESSION_MAX_AGE = 60 * 60 * 24; // 24 hours
@@ -31,15 +24,9 @@ function timingSafeEqual(a: string, b: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-  const { success, reset } = await ratelimit.limit(ip);
-
-  if (!success) {
-    const retryAfter = Math.ceil((reset - Date.now()) / 1000);
-    return NextResponse.json(
-      { ok: false, error: 'Too many login attempts. Please try again later.' },
-      { status: 429, headers: { 'Retry-After': String(retryAfter) } },
-    );
+  const rateLimitResponse = await enforceRateLimit(request, 'auth');
+  if (rateLimitResponse) {
+    return rateLimitResponse;
   }
 
   let body: unknown;

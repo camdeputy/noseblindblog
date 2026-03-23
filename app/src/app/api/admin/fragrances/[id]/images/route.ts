@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 // POST: save a new image record
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const rateLimitResponse = await enforceRateLimit(req, 'admin_write');
+    if (rateLimitResponse) return rateLimitResponse;
+
     const { id } = await params;
     const supabase = createAdminSupabase();
     const { url, altText, isPrimary } = await req.json();
@@ -34,6 +38,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
 // GET: list images for a fragrance
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const rateLimitResponse = await enforceRateLimit(_, 'admin_read');
+    if (rateLimitResponse) return rateLimitResponse;
+
     const { id } = await params;
     const supabase = createAdminSupabase();
     const { data, error } = await supabase

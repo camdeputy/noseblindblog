@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase/server';
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,9 @@ function sanitizeSearchQuery(raw: string): string {
 }
 
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = await enforceRateLimit(request, 'public_search');
+  if (rateLimitResponse) return rateLimitResponse;
+
   const { searchParams } = request.nextUrl;
   const q = sanitizeSearchQuery(searchParams.get('q') ?? '');
 

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabase } from "@/lib/supabase/admin";
+import { enforceRateLimit } from "@/lib/rateLimit";
 
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = await enforceRateLimit(request, "admin_read");
+  if (rateLimitResponse) return rateLimitResponse;
+
   const supabase = createAdminSupabase();
   const q = request.nextUrl.searchParams.get("q");
 
@@ -25,6 +29,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: Request) {
+  const rateLimitResponse = await enforceRateLimit(request, "admin_write");
+  if (rateLimitResponse) return rateLimitResponse;
+
   const supabase = createAdminSupabase();
 
   let body: { name: string; description?: string };

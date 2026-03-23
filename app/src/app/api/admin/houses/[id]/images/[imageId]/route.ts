@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getS3Client } from '@/lib/s3';
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 export async function DELETE(
-    _: NextRequest,
+    request: NextRequest,
     { params }: { params: Promise<{ id: string; imageId: string }> }
 ) {
+    const rateLimitResponse = await enforceRateLimit(request, 'admin_write');
+    if (rateLimitResponse) return rateLimitResponse;
+
     const { id, imageId } = await params;
     const supabase = createAdminSupabase();
 
@@ -35,9 +39,12 @@ export async function DELETE(
 
 // PATCH: set as primary
 export async function PATCH(
-    _: NextRequest,
+    request: NextRequest,
     { params }: { params: Promise<{ id: string; imageId: string }> }
 ) {
+    const rateLimitResponse = await enforceRateLimit(request, 'admin_write');
+    if (rateLimitResponse) return rateLimitResponse;
+
     const { id, imageId } = await params;
     const supabase = createAdminSupabase();
 

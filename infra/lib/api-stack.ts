@@ -67,6 +67,14 @@ export class ApiStack extends cdk.Stack {
             }
         });
 
+        const defaultStage = httpApi.defaultStage?.node.defaultChild as apigwv2.CfnStage | undefined;
+        if (defaultStage) {
+            defaultStage.defaultRouteSettings = {
+                throttlingBurstLimit: 50,
+                throttlingRateLimit: 25
+            };
+        }
+
         const healthFn = new lambdaNodejs.NodejsFunction(this, "HealthFn", {
             runtime: lambda.Runtime.NODEJS_20_X,
             entry: "../api/src/handlers/health.ts",
