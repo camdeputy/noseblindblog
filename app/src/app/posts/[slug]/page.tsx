@@ -1,12 +1,11 @@
 import { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 import { getPostBySlug, getPosts } from '@/lib/api';
 import PostContent from '@/components/PostContent';
 import Badge from '@/components/ui/Badge';
-import { siteUrl, siteName } from '@/lib/siteConfig';
+import { siteUrl } from '@/lib/siteConfig';
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -75,7 +74,6 @@ export async function generateStaticParams() {
 
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
-  const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   let post;
   try {
@@ -86,27 +84,9 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const displayDate = post.publishedAt || post.createdAt;
   const readingTime = post.content ? estimateReadingTime(post.content) : 0;
-  const isoDate =
-    typeof displayDate === 'number' ? new Date(displayDate).toISOString() : displayDate;
-
-  const blogPostingSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
-    headline: post.title,
-    description: post.summary,
-    datePublished: isoDate,
-    url: `${siteUrl}/posts/${slug}`,
-    author: { '@type': 'Person', name: 'Anosmic', url: `${siteUrl}/about` },
-    publisher: { '@type': 'Organization', name: siteName, url: siteUrl },
-  };
 
   return (
     <article className="max-w-3xl mx-auto px-4 py-12">
-      <script
-        nonce={nonce}
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }}
-      />
       <Link
         href="/"
         className="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors mb-8"

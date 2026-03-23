@@ -3,8 +3,6 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { siteUrl } from '@/lib/siteConfig';
 
-export const runtime = 'edge';
-
 export const metadata: Metadata = {
   title: 'About',
   description: 'Noseblind, a fragrance review blog and scent library based in the San Francisco Bay Area.',

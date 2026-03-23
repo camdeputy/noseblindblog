@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { siteUrl, siteName, siteDescription } from '@/lib/siteConfig';
@@ -21,25 +20,9 @@ export const metadata: Metadata = {
   },
 };
 
-export const runtime = 'edge';
-
-export default async function HomePage() {
-  const nonce = (await headers()).get('x-nonce') ?? undefined;
-  const organizationSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: siteName,
-    url: siteUrl,
-    description: siteDescription,
-  };
-
+export default function HomePage() {
   return (
     <div className="bg-tertiary/30">
-      <script
-        nonce={nonce}
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-      />
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Radial depth gradient — warms the center behind headings */}

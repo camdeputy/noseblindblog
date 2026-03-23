@@ -112,13 +112,12 @@ function applySecurityHeaders(
 
   if (pathname.startsWith('/api/')) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-  } else {
-    // Never let cached HTML outlive the nonce embedded in its inline scripts.
-    response.headers.set(
-      'Cache-Control',
-      'private, no-store, no-cache, max-age=0, must-revalidate',
-    );
   }
+
+  response.headers.set(
+    'Cache-Control',
+    'private, no-store, no-cache, max-age=0, must-revalidate',
+  );
 
   return response;
 }
@@ -175,12 +174,7 @@ function redirectToLogin(request: NextRequest) {
 
 export const config = {
   matcher: [
-    {
-      source: '/((?!_next/static|_next/image|favicon\\.ico).*)',
-      missing: [
-        { type: 'header', key: 'next-router-prefetch' },
-        { type: 'header', key: 'purpose', value: 'prefetch' },
-      ],
-    },
+    '/admin/:path*',
+    '/api/admin/:path*',
   ],
 };

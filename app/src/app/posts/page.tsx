@@ -3,8 +3,6 @@ import Link from 'next/link';
 import { getPosts } from '@/lib/api';
 import { Post } from '@/types/post';
 
-export const runtime = 'edge';
-
 import { siteUrl } from '@/lib/siteConfig';
 
 export const metadata: Metadata = {

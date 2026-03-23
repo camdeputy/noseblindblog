@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { getPosts } from '@/lib/api';
 import { siteUrl } from '@/lib/siteConfig';
@@ -161,7 +160,6 @@ export default async function FragrancePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   const fragrance = await getFragranceBySlug(slug);
   if (!fragrance) notFound();
@@ -196,33 +194,8 @@ export default async function FragrancePage({
 
   const hasNotes = notes.length > 0;
 
-  const productSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: fragrance.name,
-    ...(fragrance.description && { description: fragrance.description }),
-    ...(fragrance.fragrance_houses?.name && {
-      brand: { '@type': 'Brand', name: fragrance.fragrance_houses.name },
-    }),
-    ...(fragrance.rating != null && {
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: fragrance.rating,
-        bestRating: 5,
-        reviewCount: 1,
-      },
-    }),
-    ...(primaryImage && { image: primaryImage.url }),
-    url: `${siteUrl}/fragrances/${fragrance.slug}`,
-  };
-
   return (
     <div className="min-h-screen bg-tertiary/30">
-      <script
-        nonce={nonce}
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
-      />
       {/* Hero */}
       <section className="relative overflow-hidden">
         {/* Radial depth gradient */}

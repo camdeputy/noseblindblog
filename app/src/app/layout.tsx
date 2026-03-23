@@ -1,6 +1,4 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
-import { connection } from 'next/server';
 import { Cormorant_Garamond, Source_Sans_3 } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -25,8 +23,6 @@ const sourceSans = Source_Sans_3({
   display: 'swap',
 });
 
-export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = {
   title: {
     default: siteName,
@@ -49,11 +45,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Nonce-based CSP only works when each HTML document is rendered from a
-  // live request, not a prerendered shell.
-  await connection();
-  await headers();
-
   return (
     <html lang="en" className={`${cormorant.variable} ${sourceSans.variable}`}>
       <body className="min-h-screen flex flex-col bg-white">

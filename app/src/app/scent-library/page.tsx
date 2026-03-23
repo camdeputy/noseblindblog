@@ -8,8 +8,6 @@ import ScentLibraryClient, {
 import { siteUrl } from '@/lib/siteConfig';
 import ScentLibraryLoading from './loading';
 
-export const runtime = 'edge';
-
 export const metadata: Metadata = {
   title: 'Scent Library',
   description: 'Browse fragrances by house, notes, and ratings. Discover new scents in our curated fragrance catalog.',
