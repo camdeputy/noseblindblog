@@ -27,11 +27,6 @@ const nextConfig: NextConfig = {
   compress: true,
   // Don't leak the server framework in response headers
   poweredByHeader: false,
-  experimental: {
-    sri: {
-      algorithm: 'sha256',
-    },
-  },
   images: {
     // Serve modern formats when supported
     formats: ['image/avif', 'image/webp'],
