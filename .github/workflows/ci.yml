@@ -83,6 +83,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install api dependencies for Lambda bundling
+        run: npm ci
+        working-directory: api
+
       - name: Typecheck
         run: npm run typecheck
 
