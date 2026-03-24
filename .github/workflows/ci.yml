@@ -8,9 +8,12 @@ on:
   pull_request:
 
 jobs:
-  check:
-    name: Check
+  app:
+    name: App
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,22 +23,71 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: |
-            app/package-lock.json
-            api/package-lock.json
-            infra/package-lock.json
+          cache-dependency-path: app/package-lock.json
 
-      - name: Install app dependencies
+      - name: Install dependencies
         run: npm ci
-        working-directory: app
 
-      - name: Install api dependencies
-        run: npm ci
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+
+  api:
+    name: API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
         working-directory: api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install infra dependencies
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install dependencies
         run: npm ci
-        working-directory: infra
 
-      - name: Run repo checks
-        run: npm run check
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+
+  infra:
+    name: Infra
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: infra/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+
+      - name: Synth
+        run: npm run synth:check

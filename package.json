@@ -4,7 +4,7 @@
   "scripts": {
     "check:app": "npm --prefix app run lint && npm --prefix app run typecheck && npm --prefix app run test",
     "check:api": "npm --prefix api run typecheck && npm --prefix api run test",
-    "check:infra": "npm --prefix infra run typecheck && npm --prefix infra run test",
+    "check:infra": "npm --prefix infra run typecheck && npm --prefix infra run test && npm --prefix infra run synth:check",
     "check:success": "node -e \"console.log('Excelsior!')\"",
     "check": "npm run check:app && npm run check:api && npm run check:infra && npm run check:success"
   }
