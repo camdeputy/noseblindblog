@@ -6,7 +6,7 @@ export const revalidate = 300;
 
 const PAGE_SIZE = 8;
 const SEARCH_MAX_LENGTH = 100;
-const HOUSE_LIST_COLUMNS = 'id, name, slug, description, rating, created_at';
+const HOUSE_LIST_COLUMNS = 'id, name, slug, description, price, created_at';
 const FRAGRANCE_LIST_COLUMNS = 'id, house_id, name, slug, description, rating, size_ml, concentration, review_post_id, created_at';
 
 function sanitizeSearchQuery(raw: string): string {
@@ -115,6 +115,7 @@ export async function GET(request: NextRequest) {
 
     const housesWithFragrances = allHouses.map((h) => ({
       ...h,
+      rating: null,
       logo_url: houseImageMap.get(h.id) ?? null,
       fragrances: (byHouse.get(h.id) ?? []).map((f) => ({
         ...f,
@@ -187,6 +188,7 @@ export async function GET(request: NextRequest) {
 
   const housesWithFragrances = houses.map((h) => ({
     ...h,
+    rating: null,
     logo_url: houseImageMap.get(h.id) ?? null,
     fragrances: (byHouse.get(h.id) ?? []).map((f) => ({
       ...f,
