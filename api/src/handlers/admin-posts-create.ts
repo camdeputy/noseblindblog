@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { randomUUID } from "crypto";
 
@@ -58,6 +58,25 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
             statusCode: 400,
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ ok: false, error: "Missing required fields: slug, title" })
+        };
+    }
+
+    const existingBySlug = await ddb.send(
+        new QueryCommand({
+            TableName: TABLE_NAME,
+            IndexName: "slug-index",
+            KeyConditionExpression: "#sl = :slug",
+            ExpressionAttributeNames: { "#sl": "slug" },
+            ExpressionAttributeValues: { ":slug": body.slug },
+            Limit: 1
+        })
+    );
+
+    if ((existingBySlug.Items ?? []).length > 0) {
+        return {
+            statusCode: 409,
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ ok: false, error: "Slug already exists" })
         };
     }
 

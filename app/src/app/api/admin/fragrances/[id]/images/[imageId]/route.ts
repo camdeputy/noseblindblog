@@ -3,6 +3,7 @@ import { createAdminSupabase } from '@/lib/supabase/admin';
 import { DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getS3Client } from '@/lib/s3';
 import { enforceRateLimit } from '@/lib/rateLimit';
+import { extractManagedMediaKey } from '@/lib/media';
 
 export async function DELETE(
     request: NextRequest,
@@ -23,8 +24,8 @@ export async function DELETE(
 
     if (!image) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    const mediaBase = process.env.NEXT_PUBLIC_MEDIA_BASE_URL!;
-    const key = image.url.replace(`${mediaBase}/`, '');
+    const key = extractManagedMediaKey(image.url, 'fragrance', id);
+    if (!key) return NextResponse.json({ error: 'Invalid managed media URL' }, { status: 400 });
     const s3 = await getS3Client();
     await s3.send(new DeleteObjectCommand({ Bucket: process.env.AWS_MEDIA_BUCKET!, Key: key }));
 
@@ -56,7 +57,8 @@ export async function PATCH(
     const { error } = await supabase
         .from('fragrance_images')
         .update({ is_primary: true })
-        .eq('id', imageId);
+        .eq('id', imageId)
+        .eq('fragrance_id', id);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return new NextResponse(null, { status: 204 });

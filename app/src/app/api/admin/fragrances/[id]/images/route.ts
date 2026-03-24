@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { enforceRateLimit } from '@/lib/rateLimit';
+import { extractManagedMediaKey } from '@/lib/media';
 
 // POST: save a new image record
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -10,6 +11,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const { id } = await params;
     const supabase = createAdminSupabase();
     const { url, altText, isPrimary } = await req.json();
+
+    if (typeof url !== 'string' || !extractManagedMediaKey(url, 'fragrance', id)) {
+        return NextResponse.json({ error: 'Invalid image URL' }, { status: 400 });
+    }
 
     if (isPrimary) {
         // Clear existing primary first (the DB unique index enforces this, but clearing
@@ -45,7 +50,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     const supabase = createAdminSupabase();
     const { data, error } = await supabase
         .from('fragrance_images')
-        .select('*')
+        .select('id, url, alt_text, is_primary, sort_order')
         .eq('fragrance_id', id)
         .order('is_primary', { ascending: false })
         .order('sort_order');

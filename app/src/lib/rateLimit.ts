@@ -27,6 +27,7 @@ type LimitResult = {
 };
 
 const redis = Redis.fromEnv();
+const RATE_LIMIT_ANALYTICS_ENABLED = process.env.UPSTASH_RATE_LIMIT_ANALYTICS === 'true';
 
 const POLICIES: Record<PolicyName, RateLimitPolicy> = {
   auth: { name: 'auth', limit: 5, window: '15 m', prefix: 'admin_auth' },
@@ -44,7 +45,7 @@ const ratelimiters = Object.fromEntries(
       redis,
       limiter: Ratelimit.slidingWindow(policy.limit, policy.window),
       prefix: policy.prefix,
-      analytics: true,
+      analytics: RATE_LIMIT_ANALYTICS_ENABLED,
     }),
   ]),
 ) as Record<PolicyName, Ratelimit>;
@@ -100,7 +101,14 @@ export async function enforceRateLimit(
 ): Promise<NextResponse | null> {
   const ip = getClientIp(request);
   const identifier = suffix ? `${ip}:${suffix}` : ip;
-  const result = (await ratelimiters[policyName].limit(identifier)) as LimitResult;
+  let result: LimitResult;
+
+  try {
+    result = (await ratelimiters[policyName].limit(identifier)) as LimitResult;
+  } catch (error) {
+    console.error(`[rate-limit] failed for policy=${policyName}`, error);
+    return null;
+  }
 
   void result.pending;
 

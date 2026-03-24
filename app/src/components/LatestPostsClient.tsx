@@ -56,15 +56,9 @@ export default function LatestPostsClient() {
       return;
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl) {
-      setPosts([]);
-      return;
-    }
-
     const controller = new AbortController();
 
-    fetch(`${apiUrl}/posts`, { signal: controller.signal })
+    fetch('/api/posts', { signal: controller.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data) => {
         const posts = (data.items ?? []).slice(0, 3) as Post[];

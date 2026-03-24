@@ -126,6 +126,23 @@ export class ApiStack extends cdk.Stack {
         );
         contentBucket.grantRead(postsGetBySlugFn);
 
+        const postByIdFn = new lambdaNodejs.NodejsFunction(this, "PostByIdFn", {
+            runtime: lambda.Runtime.NODEJS_20_X,
+            entry: "../api/src/handlers/post-by-id.ts",
+            handler: "handler",
+            memorySize: 256,
+            timeout: cdk.Duration.seconds(10),
+            environment: {
+                TABLE_NAME: tableName
+            }
+        });
+        postByIdFn.addToRolePolicy(
+            new iam.PolicyStatement({
+                actions: ["dynamodb:GetItem"],
+                resources: [postsTable.tableArn]
+            })
+        );
+
         httpApi.addRoutes({
             path: "/health",
             methods: [apigwv2.HttpMethod.GET],
@@ -147,6 +164,15 @@ export class ApiStack extends cdk.Stack {
             integration: new integrations.HttpLambdaIntegration(
                 "PostsGetBySlugIntegration",
                 postsGetBySlugFn
+            )
+        });
+
+        httpApi.addRoutes({
+            path: "/posts/id/{id}",
+            methods: [apigwv2.HttpMethod.GET],
+            integration: new integrations.HttpLambdaIntegration(
+                "PostByIdIntegration",
+                postByIdFn
             )
         });
 

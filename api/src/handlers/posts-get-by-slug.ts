@@ -55,7 +55,16 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         })
     );
 
-    const item = resp.Items?.[0];
+    const matches = resp.Items ?? [];
+    if (matches.length > 1) {
+        return {
+            statusCode: 409,
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ ok: false, error: "Duplicate slug detected" })
+        };
+    }
+
+    const item = matches[0];
     if (!item) {
         return {
             statusCode: 404,
@@ -63,7 +72,13 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
             body: JSON.stringify({ ok: false, error: "Not found" })
         };
     }
-    //   if (item.status !== "published") return { statusCode: 404 }
+    if (item.status !== "published") {
+        return {
+            statusCode: 404,
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ ok: false, error: "Not found" })
+        };
+    }
     if (!CONTENT_BUCKET) {
         return {
             statusCode: 500,

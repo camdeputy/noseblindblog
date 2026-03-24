@@ -1,8 +1,6 @@
 import { Post, PostWithContent, CreatePostData, UpdatePostData } from '@/types/post';
 import { FragranceHouse, CreateHouseData, UpdateHouseData, Fragrance, CreateFragranceData, UpdateFragranceData, FragranceNote, FragranceWithNotes } from '@/types/fragrance';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
-
 interface ApiResponse<T> {
   ok: boolean;
   error?: string;
@@ -12,7 +10,7 @@ interface ApiResponse<T> {
 }
 
 export async function getPosts(): Promise<Post[]> {
-  const response = await fetch(`${API_URL}/posts`, {
+  const response = await fetch('/api/posts', {
     next: { revalidate: 300 },
   });
 
@@ -29,7 +27,7 @@ export async function getPosts(): Promise<Post[]> {
 }
 
 export async function getPostBySlug(slug: string): Promise<PostWithContent> {
-  const response = await fetch(`${API_URL}/posts/${slug}`, {
+  const response = await fetch(`/api/posts/${slug}`, {
     next: { revalidate: 300, tags: [`post-${slug}`] },
   });
 
@@ -49,6 +47,29 @@ export async function getPostBySlug(slug: string): Promise<PostWithContent> {
     ...data.item,
     tags: data.item.tags ?? [],
     content: data.content ?? null,
+  };
+}
+
+export async function getPostSummaryById(id: string): Promise<Post> {
+  const response = await fetch(`/api/posts/id/${id}`, {
+    next: { revalidate: 300, tags: [`post-id-${id}`] },
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('Post not found');
+    }
+    throw new Error('Failed to fetch post');
+  }
+
+  const data: ApiResponse<Post> = await response.json();
+  if (!data.ok || !data.item) {
+    throw new Error(data.error || 'Post not found');
+  }
+
+  return {
+    ...data.item,
+    tags: data.item.tags ?? [],
   };
 }
 

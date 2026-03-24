@@ -25,6 +25,8 @@ export const metadata: Metadata = {
 };
 
 const PAGE_SIZE = 8;
+const HOUSE_LIST_COLUMNS = 'id, name, slug, description, rating, created_at';
+const FRAGRANCE_LIST_COLUMNS = 'id, house_id, name, slug, description, rating, size_ml, concentration, review_post_id, created_at';
 
 // Static shell — streams to the browser immediately, no data dependency
 export default function ScentLibraryPage() {
@@ -68,8 +70,8 @@ async function ScentLibraryData() {
     { data: recentFragData },
   ] = await Promise.all([
     supabase.from('fragrance_houses').select('id, name').order('name'),
-    supabase.from('fragrance_houses').select('*', { count: 'exact' }).order('name').range(0, PAGE_SIZE - 1),
-    supabase.from('fragrances').select('*').order('created_at', { ascending: false }).limit(5),
+    supabase.from('fragrance_houses').select(HOUSE_LIST_COLUMNS, { count: 'exact' }).order('name').range(0, PAGE_SIZE - 1),
+    supabase.from('fragrances').select(FRAGRANCE_LIST_COLUMNS).order('created_at', { ascending: false }).limit(5),
   ]);
 
   const allHouses = allHousesData ?? [];
@@ -78,15 +80,15 @@ async function ScentLibraryData() {
 
   const houseIds = houses.map((h) => h.id);
   const { data: fragrancesData } = houseIds.length > 0
-    ? await supabase.from('fragrances').select('*').in('house_id', houseIds).order('created_at', { ascending: false })
+    ? await supabase.from('fragrances').select(FRAGRANCE_LIST_COLUMNS).in('house_id', houseIds).order('created_at', { ascending: false })
     : { data: [] };
 
   const fragrances = fragrancesData ?? [];
 
-  const allFragIds = [
+  const allFragIds = [...new Set([
     ...fragrances.map((f) => f.id),
     ...(recentFragData ?? []).map((f) => f.id),
-  ];
+  ])];
 
   const [{ data: houseImgData }, { data: fragImgData }] = await Promise.all([
     houseIds.length > 0

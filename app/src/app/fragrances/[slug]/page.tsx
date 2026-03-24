@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import { createServerSupabase } from '@/lib/supabase/server';
-import { getPosts } from '@/lib/api';
+import { getPostSummaryById } from '@/lib/api';
 import { siteUrl } from '@/lib/siteConfig';
 
 export async function generateMetadata({
@@ -182,11 +182,8 @@ export default async function FragrancePage({
 
   if (fragrance.review_post_id) {
     try {
-      const posts = await getPosts();
-      const match = posts.find((p) => p.id === fragrance.review_post_id);
-      if (match) {
-        reviewPost = { slug: match.slug, title: match.title };
-      }
+      const match = await getPostSummaryById(fragrance.review_post_id);
+      reviewPost = { slug: match.slug, title: match.title };
     } catch {
       // Review fetch failure is non-fatal
     }

@@ -4,6 +4,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
 import { getS3Client } from '@/lib/s3';
 import { enforceRateLimit } from '@/lib/rateLimit';
+import { buildManagedMediaKey, getManagedMediaPublicUrl, type MediaEntityType } from '@/lib/media';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
@@ -22,22 +23,22 @@ export async function POST(req: NextRequest) {
     if (fileSize > maxSizeBytes) {
         return NextResponse.json({ error: `File too large (max ${maxSizeMb} MB)` }, { status: 400 });
     }
-    if (!['fragrance', 'house'].includes(entityType)) {
+    if (!['fragrance', 'house'].includes(entityType) || typeof entityId !== 'string' || !entityId) {
         return NextResponse.json({ error: 'Invalid entity type' }, { status: 400 });
     }
 
-    const mediaBaseRaw = process.env.NEXT_PUBLIC_MEDIA_BASE_URL;
-    if (!mediaBaseRaw) {
-        return NextResponse.json({ error: 'NEXT_PUBLIC_MEDIA_BASE_URL is not configured' }, { status: 500 });
-    }
-    try { new URL(mediaBaseRaw); } catch {
-        return NextResponse.json({ error: 'NEXT_PUBLIC_MEDIA_BASE_URL must be a full URL including https://' }, { status: 500 });
-    }
-    // Strip trailing slash to avoid double-slash in the public URL
-    const mediaBase = mediaBaseRaw.replace(/\/$/, '');
-
     const ext = contentType.split('/')[1].replace('jpeg', 'jpg');
-    const key = `media/${entityType}s/${entityId}/${randomUUID()}.${ext}`;
+    let key: string;
+    let publicUrl: string;
+    try {
+        key = buildManagedMediaKey(entityType as MediaEntityType, entityId, `${randomUUID()}.${ext}`);
+        publicUrl = getManagedMediaPublicUrl(entityType as MediaEntityType, entityId, key);
+    } catch (error) {
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : 'Invalid media configuration' },
+            { status: 400 },
+        );
+    }
 
     const s3 = await getS3Client();
     const command = new PutObjectCommand({
@@ -48,7 +49,5 @@ export async function POST(req: NextRequest) {
     });
 
     const presignedUrl = await getSignedUrl(s3, command, { expiresIn: 300 }); // 5 min
-    const publicUrl = `${mediaBase}/${key}`;
-
     return NextResponse.json({ presignedUrl, publicUrl, key });
 }

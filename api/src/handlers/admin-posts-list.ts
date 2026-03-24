@@ -16,15 +16,22 @@ export async function handler(
         };
     }
 
-    // Scan all posts (admin view includes drafts and published)
-    const resp = await ddb.send(
-        new ScanCommand({
-            TableName: TABLE_NAME,
-            Limit: 100
-        })
-    );
+    const items: Record<string, any>[] = [];
+    let lastEvaluatedKey: Record<string, unknown> | undefined;
 
-    const items = (resp.Items ?? []).map((it: any) => ({
+    do {
+        const resp = await ddb.send(
+            new ScanCommand({
+                TableName: TABLE_NAME,
+                ExclusiveStartKey: lastEvaluatedKey
+            })
+        );
+        items.push(...(resp.Items ?? []));
+        lastEvaluatedKey = resp.LastEvaluatedKey;
+    } while (lastEvaluatedKey);
+
+    const normalized = items
+      .map((it: any) => ({
         id: it.postId,
         slug: it.slug,
         title: it.title,
@@ -35,11 +42,16 @@ export async function handler(
         createdAt: it.createdAt,
         updatedAt: it.updatedAt,
         publishedAt: it.publishedAt
-    }));
+      }))
+      .sort((a, b) => {
+        const dateA = new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
+        const dateB = new Date(b.updatedAt ?? b.createdAt ?? 0).getTime();
+        return dateB - dateA;
+      });
 
     return {
         statusCode: 200,
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ok: true, items })
+        body: JSON.stringify({ ok: true, items: normalized })
     };
 }

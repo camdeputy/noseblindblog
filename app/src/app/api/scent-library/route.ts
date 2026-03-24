@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { enforceRateLimit } from '@/lib/rateLimit';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const PAGE_SIZE = 8;
 const SEARCH_MAX_LENGTH = 100;
+const HOUSE_LIST_COLUMNS = 'id, name, slug, description, rating, created_at';
+const FRAGRANCE_LIST_COLUMNS = 'id, house_id, name, slug, description, rating, size_ml, concentration, review_post_id, created_at';
 
 function sanitizeSearchQuery(raw: string): string {
   return raw
@@ -21,22 +23,22 @@ function sanitizeSearchQuery(raw: string): string {
 }
 
 export async function GET(request: NextRequest) {
-  const rateLimitResponse = await enforceRateLimit(request, 'public_search');
-  if (rateLimitResponse) return rateLimitResponse;
-
   const { searchParams } = request.nextUrl;
   const q = sanitizeSearchQuery(searchParams.get('q') ?? '');
 
   // ── Search mode ─────────────────────────────────────────────────────────────
   if (q) {
+    const rateLimitResponse = await enforceRateLimit(request, 'public_search');
+    if (rateLimitResponse) return rateLimitResponse;
+
     const supabase = createServerSupabase();
     const pattern = `%${q}%`;
 
     // Parallel: houses matching by name AND fragrances matching by name
     const [{ data: houseMatches, error: houseErr }, { data: fragMatches, error: fragErr }] =
       await Promise.all([
-        supabase.from('fragrance_houses').select('*').ilike('name', pattern).order('name'),
-        supabase.from('fragrances').select('*').ilike('name', pattern).order('created_at', { ascending: false }),
+        supabase.from('fragrance_houses').select(HOUSE_LIST_COLUMNS).ilike('name', pattern).order('name'),
+        supabase.from('fragrances').select(FRAGRANCE_LIST_COLUMNS).ilike('name', pattern).order('created_at', { ascending: false }),
       ]);
 
     if (houseErr) return NextResponse.json({ error: houseErr.message }, { status: 500 });
@@ -56,7 +58,7 @@ export async function GET(request: NextRequest) {
     if (extraHouseIds.length > 0) {
       const { data, error } = await supabase
         .from('fragrance_houses')
-        .select('*')
+        .select(HOUSE_LIST_COLUMNS)
         .in('id', extraHouseIds)
         .order('name');
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -68,7 +70,7 @@ export async function GET(request: NextRequest) {
     if (houseMatchIds.size > 0) {
       const { data, error } = await supabase
         .from('fragrances')
-        .select('*')
+        .select(FRAGRANCE_LIST_COLUMNS)
         .in('house_id', [...houseMatchIds])
         .order('created_at', { ascending: false });
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -97,7 +99,7 @@ export async function GET(request: NextRequest) {
 
     // Batch-fetch primary images
     const allHouseIds = allHouses.map((h) => h.id);
-    const allFragIds = [...byHouse.values()].flat().map((f) => f.id);
+    const allFragIds = [...new Set([...byHouse.values()].flat().map((f) => f.id))];
 
     const [{ data: houseImgData }, { data: fragImgData }] = await Promise.all([
       allHouseIds.length > 0
@@ -128,11 +130,14 @@ export async function GET(request: NextRequest) {
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
+  const rateLimitResponse = await enforceRateLimit(request, 'public_read');
+  if (rateLimitResponse) return rateLimitResponse;
+
   const supabase = createServerSupabase();
 
   const { data: housesData, error: housesError, count } = await supabase
     .from('fragrance_houses')
-    .select('*', { count: 'exact' })
+    .select(HOUSE_LIST_COLUMNS, { count: 'exact' })
     .order('name', { ascending: true })
     .range(from, to);
 
@@ -150,7 +155,7 @@ export async function GET(request: NextRequest) {
 
   const { data: fragrancesData, error: fragrancesError } = await supabase
     .from('fragrances')
-    .select('*')
+    .select(FRAGRANCE_LIST_COLUMNS)
     .in('house_id', houseIds)
     .order('created_at', { ascending: false });
 

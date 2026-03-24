@@ -72,7 +72,16 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         })
     );
 
-    const existingItem = queryResp.Items?.[0];
+    const matches = queryResp.Items ?? [];
+    if (matches.length > 1) {
+        return {
+            statusCode: 409,
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ ok: false, error: "Duplicate slug detected" })
+        };
+    }
+
+    const existingItem = matches[0];
     if (!existingItem) {
         return {
             statusCode: 404,
