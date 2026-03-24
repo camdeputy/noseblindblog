@@ -9,8 +9,21 @@ interface ApiResponse<T> {
   content?: string | null;
 }
 
+function getPublicApiUrl(path: string): string {
+  if (typeof window !== 'undefined') {
+    return path;
+  }
+
+  const baseUrl = process.env.AWS_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '';
+  if (!baseUrl) {
+    return path;
+  }
+
+  return `${baseUrl.replace(/\/$/, '')}${path}`;
+}
+
 export async function getPosts(): Promise<Post[]> {
-  const response = await fetch('/api/posts', {
+  const response = await fetch(getPublicApiUrl('/posts'), {
     next: { revalidate: 300 },
   });
 
@@ -27,7 +40,7 @@ export async function getPosts(): Promise<Post[]> {
 }
 
 export async function getPostBySlug(slug: string): Promise<PostWithContent> {
-  const response = await fetch(`/api/posts/${slug}`, {
+  const response = await fetch(getPublicApiUrl(`/posts/${slug}`), {
     next: { revalidate: 300, tags: [`post-${slug}`] },
   });
 
@@ -51,7 +64,7 @@ export async function getPostBySlug(slug: string): Promise<PostWithContent> {
 }
 
 export async function getPostSummaryById(id: string): Promise<Post> {
-  const response = await fetch(`/api/posts/id/${id}`, {
+  const response = await fetch(getPublicApiUrl(`/posts/id/${id}`), {
     next: { revalidate: 300, tags: [`post-id-${id}`] },
   });
 
