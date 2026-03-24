@@ -18,8 +18,8 @@ async function streamToString(stream: any): Promise<string> {
 
     // Fallback for streams
     return await new Promise((resolve, reject) => {
-        const chunks: any[] = [];
-        (stream as Readable).on("data", (chunk) => chunks.push(chunk));
+        const chunks: Uint8Array[] = [];
+        (stream as Readable).on("data", (chunk: Uint8Array) => chunks.push(chunk));
         (stream as Readable).on("error", reject);
         (stream as Readable).on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
     });

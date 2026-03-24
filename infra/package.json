@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "synth": "cdk synth",
     "deploy": "cdk deploy",
     "diff": "cdk diff",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@types/node": "^25.0.8",
     "aws-cdk": "^2.1100.3",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.1"
   }
 }

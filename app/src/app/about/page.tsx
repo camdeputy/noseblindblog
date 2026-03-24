@@ -63,7 +63,7 @@ export default function AboutPage() {
             <div className="h-px w-16 bg-secondary/30" />
           </div>
           <p className="text-primary/60 max-w-xlg mx-auto text-lg leading-relaxed">
-            I'm Anosmic. I began working on Noseblind in 2026 as a way to engage with my hobby of perfume collecting 
+            I&apos;m Anosmic. I began working on Noseblind in 2026 as a way to engage with my hobby of perfume collecting 
             in a more mindful way. Fragrance is such a wonderful storytelling medium, but collecting can be expensive and in some cases wasteful.
           </p>
         </div>
@@ -96,11 +96,11 @@ export default function AboutPage() {
               a journal of sorts, and I want to share it with any who are along for the ride.
             </p>
             <p className="text-primary/70 leading-relaxed mb-5">
-              Noseblind's ethics will reflect those of its author. As a result, brands with anti-black,
+              Noseblind&apos;s ethics will reflect those of its author. As a result, brands with anti-black,
               homophobic, or otherwise harmful rhetoric will not be reviewed or given a spotlight.
             </p>
             <p className="text-primary/70 leading-relaxed">
-              This is a personal project, but if you'd like to make recommendations or suggest a brand,
+              This is a personal project, but if you&apos;d like to make recommendations or suggest a brand,
               feel free to{' '}
               <a href="mailto:anosmic@noseblindblog.com" className="text-secondary underline hover:text-primary transition-colors">
                 reach out
@@ -121,8 +121,8 @@ export default function AboutPage() {
         </div>
         <div className="space-y-5">
           <p className="text-primary/70 leading-relaxed mb-5">
-            Now while I will continue writing under the name Anosmic, I would like you to know a bit more about me. Our opinions and perspectives are shaped by our experiences, I think it's only fair 
-            for you to know a bit of mine. Maybe you'll find some commanility:
+            Now while I will continue writing under the name Anosmic, I would like you to know a bit more about me. Our opinions and perspectives are shaped by our experiences, I think it&apos;s only fair 
+            for you to know a bit of mine. Maybe you&apos;ll find some commanility:
           </p>
           <p className="text-primary/70 leading-relaxed">
             <span className="text-primary font-semibold">Location: </span>San Francisco Bay Area

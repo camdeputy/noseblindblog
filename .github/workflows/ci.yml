@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - development
+  pull_request:
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            app/package-lock.json
+            api/package-lock.json
+            infra/package-lock.json
+
+      - name: Install app dependencies
+        run: npm ci
+        working-directory: app
+
+      - name: Install api dependencies
+        run: npm ci
+        working-directory: api
+
+      - name: Install infra dependencies
+        run: npm ci
+        working-directory: infra
+
+      - name: Run repo checks
+        run: npm run check

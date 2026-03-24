@@ -15,7 +15,7 @@ export default function TermsPage() {
 
       <Section title="Acceptance of Terms">
         <p>
-          By accessing or using noseblindblog.com (the "Site"), you agree to be bound by these
+          By accessing or using noseblindblog.com (the &quot;Site&quot;), you agree to be bound by these
           Terms of Use. If you do not agree, please do not use the Site.
         </p>
       </Section>
@@ -71,7 +71,7 @@ export default function TermsPage() {
 
       <Section title="Disclaimer of Warranties">
         <p>
-          This Site is provided on an "as is" and "as available" basis, without warranties of any
+          This Site is provided on an &quot;as is&quot; and &quot;as available&quot; basis, without warranties of any
           kind, express or implied. Noseblind does not warrant that the Site will be uninterrupted,
           error-free, or free of viruses or other harmful components.
         </p>

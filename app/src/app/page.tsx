@@ -81,13 +81,13 @@ export default function HomePage() {
           {/* Text side */}
           <div className="py-16 px-8 md:px-12 flex flex-col justify-center">
             <h2 className="font-display text-3xl sm:text-4xl font-semibold text-primary mb-2">
-              Let's get <span className="text-secondary">Anosmic</span>
+              Let&apos;s get <span className="text-secondary">Anosmic</span>
             </h2>
             <p className="text-primary/80 leading-relaxed mb-4">
               Noseblind is more than a fragrance blog; it is a digital journal primarily dedicated to 
               olfactory arts. I believe it is the most intimate form of expression, announcing our presence and 
               lingering in our absence. Join me on my fragrance journey as I sniff through and review my fragrance TBS (To Be Smelled). 
-              Together we will discover new favorites, and overwhelm our senses (but on a real note, sniff responsibly). Let's get to smelling!
+              Together we will discover new favorites, and overwhelm our senses (but on a real note, sniff responsibly). Let&apos;s get to smelling!
             </p>
             <p className="text-primary/80 leading-relaxed mb-8">
               - Anosmic

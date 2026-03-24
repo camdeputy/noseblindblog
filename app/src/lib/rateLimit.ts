@@ -26,7 +26,6 @@ type LimitResult = {
   reason?: string;
 };
 
-const redis = Redis.fromEnv();
 const RATE_LIMIT_ANALYTICS_ENABLED = process.env.UPSTASH_RATE_LIMIT_ANALYTICS === 'true';
 
 const POLICIES: Record<PolicyName, RateLimitPolicy> = {
@@ -38,17 +37,29 @@ const POLICIES: Record<PolicyName, RateLimitPolicy> = {
   public_read: { name: 'public_read', limit: 120, window: '1 m', prefix: 'public_read' },
 };
 
-const ratelimiters = Object.fromEntries(
-  Object.values(POLICIES).map((policy) => [
-    policy.name,
-    new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(policy.limit, policy.window),
-      prefix: policy.prefix,
-      analytics: RATE_LIMIT_ANALYTICS_ENABLED,
-    }),
-  ]),
-) as Record<PolicyName, Ratelimit>;
+let cachedRatelimiters: Record<PolicyName, Ratelimit> | null = null;
+
+function getRatelimiters(): Record<PolicyName, Ratelimit> {
+  if (cachedRatelimiters) {
+    return cachedRatelimiters;
+  }
+
+  const redis = Redis.fromEnv();
+
+  cachedRatelimiters = Object.fromEntries(
+    Object.values(POLICIES).map((policy) => [
+      policy.name,
+      new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(policy.limit, policy.window),
+        prefix: policy.prefix,
+        analytics: RATE_LIMIT_ANALYTICS_ENABLED,
+      }),
+    ]),
+  ) as Record<PolicyName, Ratelimit>;
+
+  return cachedRatelimiters;
+}
 
 function getHeader(headers: Headers, key: string): string | null {
   const value = headers.get(key);
@@ -104,7 +115,7 @@ export async function enforceRateLimit(
   let result: LimitResult;
 
   try {
-    result = (await ratelimiters[policyName].limit(identifier)) as LimitResult;
+    result = (await getRatelimiters()[policyName].limit(identifier)) as LimitResult;
   } catch (error) {
     console.error(`[rate-limit] failed for policy=${policyName}`, error);
     return null;

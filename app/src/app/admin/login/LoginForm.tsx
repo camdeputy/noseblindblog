@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -114,9 +115,9 @@ export default function LoginForm() {
 
       {/* Back link */}
       <p className="text-center mt-6 text-sm text-primary/50">
-        <a href="/" className="hover:text-primary transition-colors">
+        <Link href="/" className="hover:text-primary transition-colors">
           Back to site
-        </a>
+        </Link>
       </p>
     </div>
   );

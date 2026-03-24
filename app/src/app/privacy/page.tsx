@@ -15,7 +15,7 @@ export default function PrivacyPage() {
 
       <Section title="Overview">
         <p>
-          Noseblind ("we", "us", or "our") operates noseblindblog.com (the "Site") as a fragrance
+          Noseblind (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates noseblindblog.com (the &quot;Site&quot;) as a fragrance
           blog and catalog. This policy explains what information is collected when you visit, how
           it is used, your rights regarding that information, and the legal basis on which we
           process it. We do not sell your personal information.
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
             understand how visitors use the Site, identify technical issues, and improve content.
             As these tools are cookieless and do not retain IP addresses or create individual
             profiles, we have assessed that this use does not override your rights and freedoms.
-            You have the right to object to this processing at any time (see "Your GDPR Rights"
+            You have the right to object to this processing at any time (see &quot;Your GDPR Rights&quot;
             below).
           </li>
           <li>
@@ -120,12 +120,12 @@ export default function PrivacyPage() {
         <ul className="list-disc list-inside mt-3 space-y-3 text-primary/80">
           <li>
             <strong>Vercel, Inc.</strong> — hosts this Site and provides Vercel Analytics and
-            Speed Insights. As our hosting provider, all web traffic passes through Vercel's
+            Speed Insights. As our hosting provider, all web traffic passes through Vercel&apos;s
             infrastructure. Vercel Analytics collects cookieless, aggregated page-view data;
             Speed Insights collects Core Web Vitals performance metrics. Neither service stores
             your IP address or places cookies. Vercel is headquartered in the United States; for
             transfers from the EU/EEA, Vercel relies on Standard Contractual Clauses as an
-            approved transfer mechanism under GDPR Article 46. Vercel's privacy policy is
+            approved transfer mechanism under GDPR Article 46. Vercel&apos;s privacy policy is
             available at{' '}
             <a
               href="https://vercel.com/legal/privacy-policy"
@@ -189,7 +189,7 @@ export default function PrivacyPage() {
             inaccurate personal data.
           </li>
           <li>
-            <strong>Right to Erasure / "Right to Be Forgotten" (Article 17)</strong> — You may
+            <strong>Right to Erasure / &quot;Right to Be Forgotten&quot; (Article 17)</strong> — You may
             request deletion of your personal data where there is no compelling reason for its
             continued processing. Contact form data is not retained by us beyond email delivery.
           </li>

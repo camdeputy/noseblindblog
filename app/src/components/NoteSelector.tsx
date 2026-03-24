@@ -82,7 +82,6 @@ function NotePositionSection({ position, label, notes, onAdd, onRemove }: NotePo
 
   useEffect(() => {
     if (!query.trim()) {
-      setSuggestions([]);
       return;
     }
 
@@ -177,7 +176,15 @@ function NotePositionSection({ position, label, notes, onAdd, onRemove }: NotePo
           <input
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              const nextQuery = e.target.value;
+              setQuery(nextQuery);
+
+              if (!nextQuery.trim()) {
+                setSuggestions([]);
+                setShowSuggestions(false);
+              }
+            }}
             onFocus={() => query.trim() && setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
             placeholder={`Search or add ${position} note...`}

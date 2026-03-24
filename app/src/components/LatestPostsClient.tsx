@@ -48,11 +48,16 @@ function Skeleton() {
 }
 
 export default function LatestPostsClient() {
-  const [posts, setPosts] = useState<Post[] | null>(null);
+  const [posts, setPosts] = useState<Post[] | null>(() => {
+    if (cache && Date.now() - cache.ts < CACHE_TTL) {
+      return cache.posts;
+    }
+
+    return null;
+  });
 
   useEffect(() => {
-    if (cache && Date.now() - cache.ts < CACHE_TTL) {
-      setPosts(cache.posts);
+    if (posts !== null) {
       return;
     }
 
@@ -70,7 +75,7 @@ export default function LatestPostsClient() {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [posts]);
 
   if (posts === null) return <Skeleton />;
 
