@@ -3,6 +3,8 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { randomUUID } from "crypto";
+import { buildPostPublishedJob } from "../jobs/post-published";
+
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const s3 = new S3Client({});
@@ -97,6 +99,8 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         );
     }
 
+    const publishedAt = status === "published" ? Date.now() : undefined;
+
     const item = {
         postId,
         slug: body.slug,
@@ -107,8 +111,9 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         contentKey,
         createdAt: now,
         updatedAt: now,
-        ...(status === "published" ? { publishedAt: Date.now() } : {})
+        ...(publishedAt !== undefined ? { publishedAt } : {})
     };
+
 
     await ddb.send(
         new PutCommand({
@@ -117,6 +122,18 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
             ConditionExpression: "attribute_not_exists(postId)"
         })
     );
+
+    const publishJob =
+        publishedAt !== undefined
+            ? buildPostPublishedJob({
+                jobId: randomUUID(),
+                postId,
+                slug: body.slug,
+                publishedAt
+            })
+            : null;
+
+    console.log("post publish job preview", publishJob);
 
     return {
         statusCode: 201,

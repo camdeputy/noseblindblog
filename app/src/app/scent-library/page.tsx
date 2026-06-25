@@ -1,12 +1,10 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
 import { createServerSupabase } from '@/lib/supabase/server';
 import ScentLibraryClient, {
   type HouseWithFragrances,
   type FragranceWithHouseName,
 } from './ScentLibraryClient';
 import { siteUrl } from '@/lib/siteConfig';
-import ScentLibraryLoading from './loading';
 
 export const metadata: Metadata = {
   title: 'Scent Library',
@@ -28,8 +26,9 @@ const PAGE_SIZE = 8;
 const HOUSE_LIST_COLUMNS = 'id, name, slug, description, price, created_at';
 const FRAGRANCE_LIST_COLUMNS = 'id, house_id, name, slug, description, rating, size_ml, concentration, review_post_id, created_at';
 
-// Static shell — streams to the browser immediately, no data dependency
-export default function ScentLibraryPage() {
+export default async function ScentLibraryPage() {
+  const scentLibraryData = await getScentLibraryData();
+
   return (
     <div className="min-h-screen bg-tertiary/30">
       <section className="relative overflow-hidden">
@@ -52,16 +51,12 @@ export default function ScentLibraryPage() {
         </div>
       </section>
 
-      {/* Search bar + filter + house list — skeleton shown while Supabase resolves */}
-      <Suspense fallback={<ScentLibraryLoading />}>
-        <ScentLibraryData />
-      </Suspense>
+      <ScentLibraryClient {...scentLibraryData} />
     </div>
   );
 }
 
-// Async data loader — runs after the static shell is already streaming
-async function ScentLibraryData() {
+async function getScentLibraryData() {
   const supabase = createServerSupabase();
 
   const [
@@ -134,14 +129,12 @@ async function ScentLibraryData() {
     primary_image_url: fragImageMap.get(f.id) ?? null,
   }));
 
-  return (
-    <ScentLibraryClient
-      initialHouses={initialHouses}
-      hasMore={total > PAGE_SIZE}
-      recentFragrances={recentFragrances}
-      availableLetters={availableLetters}
-    />
-  );
+  return {
+    initialHouses,
+    hasMore: total > PAGE_SIZE,
+    recentFragrances,
+    availableLetters,
+  };
 }
 
 const StarSticker = ({ className }: { className?: string }) => (

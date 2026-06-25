@@ -66,8 +66,8 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
 
   // Adaptive debounce: shorter delay when the user pauses, longer when typing fast.
   // Keystroke interval → delay: 0 ms apart → DEBOUNCE_MAX, ≥ DEBOUNCE_MAX apart → DEBOUNCE_MIN.
-  const DEBOUNCE_MIN_MS = 150;
-  const DEBOUNCE_MAX_MS = 500;
+  const DEBOUNCE_MIN_MS = 225;
+  const DEBOUNCE_MAX_MS = 650;
   const lastKeystrokeRef = useRef<number>(Date.now());
   const debounceDelayRef = useRef<number>(DEBOUNCE_MAX_MS);
 
@@ -76,24 +76,59 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [page, setPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [letterHouses, setLetterHouses] = useState<HouseWithFragrances[]>([]);
+  const [letterHasMore, setLetterHasMore] = useState(false);
+  const [letterPage, setLetterPage] = useState(1);
+  const [isLetterLoading, setIsLetterLoading] = useState(false);
+  const [isFetchingMoreLetter, setIsFetchingMoreLetter] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
+  const isSearching = searchQuery.trim().length > 0;
+  const selectedLetter = !isSearching && selectedFilter && selectedFilter !== 'recent' ? selectedFilter : null;
+
   const fetchMore = useCallback(async () => {
-    if (isFetchingMore || !hasMore) return;
-    setIsFetchingMore(true);
+    const nextPage = selectedLetter ? letterPage + 1 : page + 1;
+    const canFetchMore = selectedLetter ? letterHasMore : hasMore;
+    const isCurrentlyFetching = selectedLetter ? isFetchingMoreLetter : isFetchingMore;
+
+    if (isCurrentlyFetching || !canFetchMore) return;
+
+    if (selectedLetter) {
+      setIsFetchingMoreLetter(true);
+    } else {
+      setIsFetchingMore(true);
+    }
+
     try {
-      const res = await fetch(`/api/scent-library?page=${page + 1}`);
+      const params = new URLSearchParams({ page: String(nextPage) });
+      if (selectedLetter) params.set('letter', selectedLetter);
+
+      const res = await fetch(`/api/scent-library?${params.toString()}`, {
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      });
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
-      setHouses((prev) => [...prev, ...data.houses]);
-      setHasMore(data.hasMore);
-      setPage((p) => p + 1);
+
+      if (selectedLetter) {
+        setLetterHouses((prev) => [...prev, ...(data.houses ?? [])]);
+        setLetterHasMore(Boolean(data.hasMore));
+        setLetterPage(nextPage);
+      } else {
+        setHouses((prev) => [...prev, ...(data.houses ?? [])]);
+        setHasMore(Boolean(data.hasMore));
+        setPage(nextPage);
+      }
     } catch (err) {
       console.error('[scent-library] infinite scroll fetch error:', err);
     } finally {
-      setIsFetchingMore(false);
+      if (selectedLetter) {
+        setIsFetchingMoreLetter(false);
+      } else {
+        setIsFetchingMore(false);
+      }
     }
-  }, [isFetchingMore, hasMore, page]);
+  }, [hasMore, isFetchingMore, isFetchingMoreLetter, letterHasMore, letterPage, page, selectedLetter]);
 
   // Adaptive debounce: fires with the delay computed at the last keystroke
   useEffect(() => {
@@ -105,15 +140,81 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
   useEffect(() => {
     if (!debouncedQuery) {
       setSearchResults([]);
+      setIsSearchLoading(false);
       return;
     }
+
+    const controller = new AbortController();
+
     setIsSearchLoading(true);
-    fetch(`/api/scent-library?q=${encodeURIComponent(debouncedQuery)}`)
-      .then((r) => r.json())
+    fetch(`/api/scent-library?q=${encodeURIComponent(debouncedQuery)}`, {
+      cache: 'no-store',
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          const message = await r.text().catch(() => '');
+          throw new Error(message || 'Failed to search scent library');
+        }
+        return r.json();
+      })
       .then((data) => setSearchResults(data.houses ?? []))
-      .catch((err) => console.error('[scent-library] search error:', err))
-      .finally(() => setIsSearchLoading(false));
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        console.error('[scent-library] search error:', err);
+        setSearchResults([]);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsSearchLoading(false);
+      });
+
+    return () => controller.abort();
   }, [debouncedQuery]);
+
+  // Fetch letter-filtered houses from the API when an alphabet button is active.
+  useEffect(() => {
+    if (!selectedLetter) {
+      setLetterHouses([]);
+      setLetterHasMore(false);
+      setLetterPage(1);
+      setIsLetterLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const params = new URLSearchParams({ letter: selectedLetter, page: '1' });
+
+    setIsLetterLoading(true);
+    fetch(`/api/scent-library?${params.toString()}`, {
+      cache: 'no-store',
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          const message = await r.text().catch(() => '');
+          throw new Error(message || 'Failed to fetch scent library letter filter');
+        }
+        return r.json();
+      })
+      .then((data) => {
+        setLetterHouses(data.houses ?? []);
+        setLetterHasMore(Boolean(data.hasMore));
+        setLetterPage(1);
+      })
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        console.error('[scent-library] letter filter fetch error:', err);
+        setLetterHouses([]);
+        setLetterHasMore(false);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLetterLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [selectedLetter]);
 
   // Keep a stable ref so the observer callback always calls the latest fetchMore
   // without needing to recreate the IntersectionObserver on every render.
@@ -139,24 +240,24 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
 
   const availableLetterSet = useMemo(() => new Set(availableLetters), [availableLetters]);
 
-  const isSearching = searchQuery.trim().length > 0;
+  const isSearchPending = isSearching && searchQuery.trim() !== debouncedQuery;
   const showRecent = !isSearching && selectedFilter === 'recent';
 
-  // Letter-filter applied to loaded paginated houses (only used when not searching)
-  const filteredHouses = useMemo<HouseWithFragrances[]>(() => {
-    if (selectedFilter === 'recent' || isSearching) return [];
-    if (selectedFilter) {
-      return houses.filter((h) => h.name.charAt(0).toUpperCase() === selectedFilter);
-    }
-    return houses;
-  }, [houses, selectedFilter, isSearching]);
-
   // What actually renders in the house list
-  const displayedHouses = isSearching ? searchResults : filteredHouses;
+  const displayedHouses = isSearching ? searchResults : selectedLetter ? letterHouses : houses;
+  const isInitialLetterLoading = Boolean(selectedLetter) && isLetterLoading && letterHouses.length === 0;
+  const currentHasMore = selectedLetter ? letterHasMore : hasMore;
+  const currentIsFetchingMore = selectedLetter ? isFetchingMoreLetter : isFetchingMore;
 
   const isEmpty = showRecent
     ? recentFragrances.length === 0
-    : !isSearchLoading && displayedHouses.length === 0;
+    : !isSearchLoading && !isSearchPending && !isInitialLetterLoading && displayedHouses.length === 0;
+
+  const resetLetterFilterResults = () => {
+    setLetterHouses([]);
+    setLetterHasMore(false);
+    setLetterPage(1);
+  };
 
   return (
     <>
@@ -200,7 +301,10 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
           <div className="max-w-6xl mx-auto px-3 py-2 sm:px-4 sm:py-4">
             <div className="flex items-center justify-center gap-0.5 sm:gap-1 md:gap-2 flex-wrap">
               <button
-                onClick={() => setSelectedFilter(selectedFilter === 'recent' ? null : 'recent')}
+                onClick={() => {
+                  resetLetterFilterResults();
+                  setSelectedFilter(selectedFilter === 'recent' ? null : 'recent');
+                }}
                 className={`
                   w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
                   transition-all duration-300 text-sm
@@ -223,7 +327,11 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
                 return (
                   <button
                     key={letter}
-                    onClick={() => isAvailable && setSelectedFilter(isSelected ? null : letter)}
+                    onClick={() => {
+                      if (!isAvailable) return;
+                      resetLetterFilterResults();
+                      setSelectedFilter(isSelected ? null : letter);
+                    }}
                     disabled={!isAvailable}
                     className={`
                       w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full
@@ -248,7 +356,7 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
                 <span className="text-xs text-primary/50">
                   {selectedFilter === 'recent'
                     ? 'Showing 5 most recently added'
-                    : `Showing houses starting with "${selectedFilter}"`}
+                    : `Showing houses and fragrances starting with "${selectedFilter}"`}
                 </span>
                 <button
                   onClick={() => setSelectedFilter(null)}
@@ -289,7 +397,7 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
               ))}
             </div>
           </>
-        ) : isSearchLoading ? (
+        ) : isSearchLoading || isSearchPending || isInitialLetterLoading ? (
           <div className="space-y-16">
             <InlineHouseRowSkeleton isReversed={false} />
             <InlineHouseRowSkeleton isReversed={true} />
@@ -303,19 +411,24 @@ export default function ScentLibraryClient({ initialHouses, hasMore: initialHasM
             )}
             <div className="space-y-16">
               {displayedHouses.map((house, index) => (
-                <HouseRow key={house.id} house={house} isReversed={index % 2 === 1} index={index} />
+                <HouseRow
+                  key={house.id}
+                  house={house}
+                  isReversed={index % 2 === 1}
+                  index={index}
+                />
               ))}
             </div>
 
-            {/* Inline skeleton while fetching next page (browse mode only) */}
-            {!isSearching && isFetchingMore && (
+            {/* Inline skeleton while fetching next page */}
+            {!isSearching && currentIsFetchingMore && (
               <div className="space-y-16 mt-16">
                 <InlineHouseRowSkeleton isReversed={displayedHouses.length % 2 === 1} />
               </div>
             )}
 
-            {/* Sentinel — only active in browse mode so infinite scroll doesn't trigger during search */}
-            {!isSearching && hasMore && <div ref={sentinelCallbackRef} className="h-2" aria-hidden="true" />}
+            {/* Sentinel — active in browse and letter modes, disabled during search and recent view */}
+            {!isSearching && !showRecent && currentHasMore && <div ref={sentinelCallbackRef} className="h-2" aria-hidden="true" />}
           </>
         )}
       </section>
