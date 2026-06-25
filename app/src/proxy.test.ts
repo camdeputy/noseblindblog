@@ -52,6 +52,16 @@ describe('proxy', () => {
         expect(response.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
     });
 
+    it('applies a nonce-based CSP to the admin login page', async () => {
+        const request = new NextRequest('https://example.com/admin/login?from=%2Fadmin');
+
+        const response = await proxy(request);
+        const csp = response.headers.get('Content-Security-Policy');
+
+        expect(response.status).toBe(200);
+        expect(csp).toMatch(/script-src 'nonce-[^']+' 'self'/);
+    });
+
     it('allows authenticated admin requests through without redirecting', async () => {
         process.env.SESSION_SECRET = 'test-session-secret';
         const sessionToken = createSessionToken(

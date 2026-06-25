@@ -2,6 +2,8 @@ import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { randomUUID } from "crypto";
+import { buildPostPublishedJob } from "../jobs/post-published";
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const s3 = new S3Client({});
@@ -131,6 +133,8 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         exprAttrNames["#contentKey"] = "contentKey";
         exprAttrValues[":contentKey"] = contentKey;
     }
+    let nextPublishedAt: number | undefined;
+
     if (body.status !== undefined) {
         updateExprParts.push("#status = :status");
         exprAttrNames["#status"] = "status";
@@ -138,11 +142,13 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
         // Set publishedAt when publishing for the first time (as Unix timestamp for GSI)
         if (body.status === "published" && !existingItem.publishedAt) {
+            nextPublishedAt = Date.now();
             updateExprParts.push("#publishedAt = :publishedAt");
             exprAttrNames["#publishedAt"] = "publishedAt";
-            exprAttrValues[":publishedAt"] = Date.now();
+            exprAttrValues[":publishedAt"] = nextPublishedAt;
         }
     }
+
 
     const updateResp = await ddb.send(
         new UpdateCommand({
@@ -157,9 +163,23 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         })
     );
 
+    const updatedItem = updateResp.Attributes;
+
+    const publishJob =
+        body.status === "published" && nextPublishedAt !== undefined
+            ? buildPostPublishedJob({
+                jobId: randomUUID(),
+                postId: String(existingItem.postId),
+                slug,
+                publishedAt: nextPublishedAt
+            })
+            : null;
+
+    console.log("post publish job preview", publishJob);
+
     return {
         statusCode: 200,
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ok: true, item: updateResp.Attributes })
+        body: JSON.stringify({ ok: true, item: updatedItem })
     };
 }
