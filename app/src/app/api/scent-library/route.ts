@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { enforceRateLimit } from '@/lib/rateLimit';
 
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const PAGE_SIZE = 8;
 const SEARCH_MAX_LENGTH = 100;
@@ -22,9 +23,15 @@ function sanitizeSearchQuery(raw: string): string {
     .slice(0, SEARCH_MAX_LENGTH);
 }
 
+function sanitizeLetterFilter(raw: string): string {
+  const letter = raw.trim().charAt(0).toUpperCase();
+  return /^[A-Z]$/.test(letter) ? letter : '';
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const q = sanitizeSearchQuery(searchParams.get('q') ?? '');
+  const letter = sanitizeLetterFilter(searchParams.get('letter') ?? '');
 
   // ── Search mode ─────────────────────────────────────────────────────────────
   if (q) {
@@ -126,7 +133,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ houses: housesWithFragrances, hasMore: false, total: allHouses.length });
   }
 
-  // ── Paginated browse mode ────────────────────────────────────────────────────
+  // ── Paginated browse / letter-filter mode ───────────────────────────────────
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
@@ -136,11 +143,148 @@ export async function GET(request: NextRequest) {
 
   const supabase = createServerSupabase();
 
-  const { data: housesData, error: housesError, count } = await supabase
+  if (letter) {
+    const letterPattern = `${letter}%`;
+
+    const { data: allLetterHouseIds, error: allLetterHouseIdsError } = await supabase
+      .from('fragrance_houses')
+      .select('id')
+      .ilike('name', letterPattern)
+      .order('name', { ascending: true });
+
+    if (allLetterHouseIdsError) {
+      return NextResponse.json({ error: allLetterHouseIdsError.message }, { status: 500 });
+    }
+
+    const houseNameMatchIds = new Set((allLetterHouseIds ?? []).map((h) => h.id));
+    const houseNameMatchCount = houseNameMatchIds.size;
+
+    let houseNameMatches: {
+      id: string;
+      name: string;
+      slug?: string | null;
+      description?: string | null;
+      price?: number | null;
+      created_at?: string;
+    }[] = [];
+    if (from < houseNameMatchCount) {
+      const houseMatchFrom = from;
+      const houseMatchTo = Math.min(to, houseNameMatchCount - 1);
+      const { data, error } = await supabase
+        .from('fragrance_houses')
+        .select(HOUSE_LIST_COLUMNS)
+        .ilike('name', letterPattern)
+        .order('name', { ascending: true })
+        .range(houseMatchFrom, houseMatchTo);
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      houseNameMatches = data ?? [];
+    }
+
+    const { data: matchingFrags, error: matchingFragsError } = await supabase
+      .from('fragrances')
+      .select(FRAGRANCE_LIST_COLUMNS)
+      .ilike('name', letterPattern)
+      .order('name', { ascending: true });
+
+    if (matchingFragsError) {
+      return NextResponse.json({ error: matchingFragsError.message }, { status: 500 });
+    }
+
+    const fragranceNameMatches = matchingFrags ?? [];
+    const extraHouseIds = [
+      ...new Set(
+        fragranceNameMatches
+          .filter((f) => !houseNameMatchIds.has(f.house_id))
+          .map((f) => f.house_id),
+      ),
+    ];
+
+    let extraHouses: typeof houseNameMatches = [];
+    if (extraHouseIds.length > 0) {
+      const { data, error } = await supabase
+        .from('fragrance_houses')
+        .select(HOUSE_LIST_COLUMNS)
+        .in('id', extraHouseIds)
+        .order('name', { ascending: true });
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      extraHouses = data ?? [];
+    }
+
+    const remainingSlots = PAGE_SIZE - houseNameMatches.length;
+    const extraOffset = Math.max(0, from - houseNameMatchCount);
+    const extraHousesPage = remainingSlots > 0
+      ? extraHouses.slice(extraOffset, extraOffset + remainingSlots)
+      : [];
+
+    const houses = [...houseNameMatches, ...extraHousesPage];
+
+    if (houses.length === 0) {
+      return NextResponse.json({ houses: [], hasMore: false, total: 0 });
+    }
+
+    const byHouse = new Map<string, typeof fragranceNameMatches>();
+    const houseNameMatchPageIds = houseNameMatches.map((h) => h.id);
+    const extraHousePageIds = new Set(extraHousesPage.map((h) => h.id));
+
+    if (houseNameMatchPageIds.length > 0) {
+      const { data, error } = await supabase
+        .from('fragrances')
+        .select(FRAGRANCE_LIST_COLUMNS)
+        .in('house_id', houseNameMatchPageIds)
+        .order('created_at', { ascending: false });
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+      for (const f of data ?? []) {
+        const arr = byHouse.get(f.house_id) ?? [];
+        arr.push(f);
+        byHouse.set(f.house_id, arr);
+      }
+    }
+
+    for (const f of fragranceNameMatches.filter((f) => extraHousePageIds.has(f.house_id))) {
+      const arr = byHouse.get(f.house_id) ?? [];
+      arr.push(f);
+      byHouse.set(f.house_id, arr);
+    }
+
+    const houseIds = houses.map((h) => h.id);
+    const allFragIds = [...new Set([...byHouse.values()].flat().map((f) => f.id))];
+
+    const [{ data: houseImgData }, { data: fragImgData }] = await Promise.all([
+      supabase.from('house_images').select('house_id, url').in('house_id', houseIds).eq('is_primary', true),
+      allFragIds.length > 0
+        ? supabase.from('fragrance_images').select('fragrance_id, url').in('fragrance_id', allFragIds).eq('is_primary', true)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const houseImageMap = new Map((houseImgData ?? []).map((i) => [i.house_id, i.url]));
+    const fragImageMap = new Map((fragImgData ?? []).map((i) => [i.fragrance_id, i.url]));
+
+    const housesWithFragrances = houses.map((h) => ({
+      ...h,
+      rating: null,
+      logo_url: houseImageMap.get(h.id) ?? null,
+      fragrances: (byHouse.get(h.id) ?? []).map((f) => ({
+        ...f,
+        primary_image_url: fragImageMap.get(f.id) ?? null,
+      })),
+    }));
+
+    const total = houseNameMatchCount + extraHouses.length;
+    const hasMore = to < total - 1;
+
+    return NextResponse.json({ houses: housesWithFragrances, hasMore, total });
+  }
+
+  const housesQuery = supabase
     .from('fragrance_houses')
     .select(HOUSE_LIST_COLUMNS, { count: 'exact' })
-    .order('name', { ascending: true })
-    .range(from, to);
+    .order('name', { ascending: true });
+
+  const { data: housesData, error: housesError, count } = await housesQuery.range(from, to);
 
   if (housesError) {
     return NextResponse.json({ error: housesError.message }, { status: 500 });
